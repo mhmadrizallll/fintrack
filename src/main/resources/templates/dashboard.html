@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>FinTrack - Dashboard</title>
+
+    <link rel="stylesheet" th:href="@{/css/fintrack.css}" />
+  </head>
+
+  <body>
+    <div class="app">
+      <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+      <div th:replace="~{fragments/layout :: sidebar}"></div>
+
+      <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+      <main class="main">
+        <!-- TOPBAR -->
+
+        <div th:replace="~{fragments/layout :: topbar}"></div>
+
+        <!-- =================================================
+             CONTENT
+             ================================================= -->
+
+        <section class="content">
+          <!-- PAGE HEADER -->
+
+          <div class="page-header">
+            <div>
+              <h1>Financial Overview</h1>
+
+              <p>Pantau pemasukan, pengeluaran, dan saldo keuangan Anda.</p>
+            </div>
+
+            <div class="action-group">
+              <a href="/admin/transactions/new" class="btn btn-primary">
+                <span> + </span>
+
+                Transaksi Baru
+              </a>
+            </div>
+          </div>
+
+          <!-- =================================================
+                 STAT CARDS
+                 ================================================= -->
+
+          <div class="stats-grid">
+            <!-- INCOME -->
+
+            <div class="stat-card stat-income">
+              <div class="stat-top">
+                <div class="stat-label">Total Income</div>
+
+                <div class="stat-icon">↗</div>
+              </div>
+
+              <div
+                class="stat-value"
+                th:text="${'Rp ' + #numbers.formatDecimal(
+                            totalIncome,
+                            0,
+                            'POINT',
+                            0,
+                            'COMMA'
+                        )}"
+              >
+                Rp 0
+              </div>
+
+              <div class="stat-description">Total seluruh pemasukan</div>
+            </div>
+
+            <!-- EXPENSE -->
+
+            <div class="stat-card stat-expense">
+              <div class="stat-top">
+                <div class="stat-label">Total Expense</div>
+
+                <div class="stat-icon">↘</div>
+              </div>
+
+              <div
+                class="stat-value"
+                th:text="${'Rp ' + #numbers.formatDecimal(
+                            totalExpense,
+                            0,
+                            'POINT',
+                            0,
+                            'COMMA'
+                        )}"
+              >
+                Rp 0
+              </div>
+
+              <div class="stat-description">Total seluruh pengeluaran</div>
+            </div>
+
+            <!-- BALANCE -->
+
+            <div class="stat-card stat-balance">
+              <div class="stat-top">
+                <div class="stat-label">Current Balance</div>
+
+                <div class="stat-icon">=</div>
+              </div>
+
+              <div
+                class="stat-value"
+                th:text="${'Rp ' + #numbers.formatDecimal(
+                            balance,
+                            0,
+                            'POINT',
+                            0,
+                            'COMMA'
+                        )}"
+              >
+                Rp 0
+              </div>
+
+              <div class="stat-description">Income dikurangi expense</div>
+            </div>
+          </div>
+
+          <!-- =================================================
+                 TODAY SUMMARY
+                 ================================================= -->
+
+          <div class="grid grid-2 dashboard-top-grid">
+            <!-- TODAY INCOME -->
+
+            <div class="card today-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Hari Ini</h3>
+
+                  <div class="card-subtitle">Ringkasan transaksi hari ini</div>
+                </div>
+
+                <span class="today-icon"> 📅 </span>
+              </div>
+
+              <div class="today-summary">
+                <div class="today-item">
+                  <div class="today-label">Income</div>
+
+                  <div
+                    class="today-income"
+                    th:text="${'Rp ' + #numbers.formatDecimal(
+                                    todayIncome,
+                                    0,
+                                    'POINT',
+                                    0,
+                                    'COMMA'
+                                )}"
+                  >
+                    Rp 0
+                  </div>
+                </div>
+
+                <div class="today-divider"></div>
+
+                <div class="today-item">
+                  <div class="today-label">Expense</div>
+
+                  <div
+                    class="today-expense"
+                    th:text="${'Rp ' + #numbers.formatDecimal(
+                                    todayExpense,
+                                    0,
+                                    'POINT',
+                                    0,
+                                    'COMMA'
+                                )}"
+                  >
+                    Rp 0
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- QUICK ACTION -->
+
+            <div class="card quick-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Quick Actions</h3>
+
+                  <div class="card-subtitle">Kelola data FinTrack</div>
+                </div>
+
+                <span class="today-icon"> ⚡ </span>
+              </div>
+
+              <div class="quick-actions">
+                <a href="/admin/transactions/new" class="quick-action">
+                  <span class="quick-action-icon"> 💰 </span>
+
+                  <span>
+                    <strong> Add Transaction </strong>
+
+                    <small> Tambah transaksi baru </small>
+                  </span>
+                </a>
+
+                <a href="/reports/monthly" class="quick-action">
+                  <span class="quick-action-icon"> 📊 </span>
+
+                  <span>
+                    <strong> Monthly Report </strong>
+
+                    <small> Lihat laporan bulanan </small>
+                  </span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- =================================================
+                 RECENT TRANSACTIONS
+                 ================================================= -->
+
+          <div class="card table-card recent-card">
+            <div class="card-header recent-header">
+              <div>
+                <h3 class="card-title">Recent Transactions</h3>
+
+                <div class="card-subtitle">5 transaksi terakhir</div>
+              </div>
+
+              <a href="/admin/transactions" class="view-all"> Lihat Semua → </a>
+            </div>
+
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Code</th>
+
+                    <th>Tanggal</th>
+
+                    <th>Type</th>
+
+                    <th>Category</th>
+
+                    <th>Fund Source</th>
+
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr th:each="transaction : ${recentTransactions}">
+                    <td>
+                      <strong th:text="${transaction.transactionCode}">
+                        TRX-001
+                      </strong>
+                    </td>
+
+                    <td
+                      th:text="${#temporals.format(
+                                        transaction.transactionDate,
+                                        'dd MMM yyyy'
+                                    )}"
+                    >
+                      06 Oct 2026
+                    </td>
+
+                    <td>
+                      <span
+                        th:if="${transaction.type.name() == 'INCOME'}"
+                        class="badge badge-income"
+                      >
+                        INCOME
+                      </span>
+
+                      <span
+                        th:if="${transaction.type.name() == 'EXPENSE'}"
+                        class="badge badge-expense"
+                      >
+                        EXPENSE
+                      </span>
+                    </td>
+
+                    <td th:text="${transaction.category.name}">Category</td>
+
+                    <td th:text="${transaction.fundSource.name}">Cash</td>
+
+                    <td>
+                      <strong
+                        th:text="${'Rp ' + #numbers.formatDecimal(
+                                            transaction.amount,
+                                            0,
+                                            'POINT',
+                                            0,
+                                            'COMMA'
+                                        )}"
+                      >
+                        Rp 0
+                      </strong>
+                    </td>
+                  </tr>
+
+                  <!-- EMPTY -->
+
+                  <tr th:if="${#lists.isEmpty(recentTransactions)}">
+                    <td colspan="6">
+                      <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+
+                        <div class="empty-state-title">Belum ada transaksi</div>
+
+                        <div class="empty-state-text">
+                          Belum ada data transaksi yang tersedia.
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <div th:replace="~{fragments/layout :: mobileMenu}"></div>
+
+      <div th:replace="~{fragments/layout :: scripts}"></div>
+    </div>
+
+    <!-- =========================================================
+     DASHBOARD CSS TAMBAHAN
+     ========================================================= -->
+
+    <style>
+      .topbar-date {
+        font-size: 13px;
+        color: #6b7280;
+      }
+
+      .stat-description {
+        margin-top: 6px;
+        font-size: 11px;
+        color: #9ca3af;
+      }
+
+      .dashboard-top-grid {
+        margin-bottom: 22px;
+      }
+
+      .today-icon {
+        width: 38px;
+        height: 38px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background: #f3f4f6;
+
+        border-radius: 10px;
+
+        font-size: 17px;
+      }
+
+      .today-summary {
+        display: flex;
+        align-items: center;
+
+        min-height: 80px;
+      }
+
+      .today-item {
+        flex: 1;
+      }
+
+      .today-label {
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 6px;
+      }
+
+      .today-income,
+      .today-expense {
+        font-size: 19px;
+        font-weight: 700;
+      }
+
+      .today-income {
+        color: #16a34a;
+      }
+
+      .today-expense {
+        color: #dc2626;
+      }
+
+      .today-divider {
+        width: 1px;
+        height: 45px;
+        background: #e5e7eb;
+        margin: 0 25px;
+      }
+
+      .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .quick-action {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        padding: 12px;
+
+        border: 1px solid #e5e7eb;
+        border-radius: 9px;
+
+        transition:
+          border-color 0.2s ease,
+          background 0.2s ease,
+          transform 0.2s ease;
+      }
+
+      .quick-action:hover {
+        background: #f9fafb;
+        border-color: #bfdbfe;
+        transform: translateY(-1px);
+      }
+
+      .quick-action-icon {
+        width: 34px;
+        height: 34px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background: #eff6ff;
+
+        border-radius: 8px;
+
+        flex-shrink: 0;
+      }
+
+      .quick-action strong {
+        display: block;
+
+        font-size: 12px;
+
+        color: #111827;
+      }
+
+      .quick-action small {
+        display: block;
+
+        margin-top: 3px;
+
+        font-size: 10px;
+
+        color: #9ca3af;
+      }
+
+      .recent-card {
+        margin-bottom: 30px;
+      }
+
+      .recent-header {
+        padding: 20px 20px 0;
+      }
+
+      .view-all {
+        font-size: 12px;
+        font-weight: 600;
+        color: #2563eb;
+      }
+
+      .view-all:hover {
+        color: #1d4ed8;
+      }
+
+      @media (max-width: 768px) {
+        .quick-actions {
+          grid-template-columns: 1fr;
+        }
+
+        .today-summary {
+          gap: 15px;
+        }
+
+        .today-divider {
+          margin: 0 10px;
+        }
+      }
+    </style>
+
+    <!-- =========================================================
+     CURRENT DATE
+     ========================================================= -->
+  </body>
+</html>

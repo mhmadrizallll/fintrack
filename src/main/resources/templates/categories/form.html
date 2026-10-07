@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>FinTrack - Category</title>
+
+    <link rel="stylesheet" th:href="@{/css/fintrack.css}" />
+
+    <style>
+      /* =================================================
+           CATEGORY FORM
+           ================================================= */
+
+      .category-form-wrapper {
+        max-width: 760px;
+      }
+
+      .category-form-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 28px;
+      }
+
+      .form-section {
+        margin-bottom: 28px;
+      }
+
+      .form-section:last-child {
+        margin-bottom: 0;
+      }
+
+      .form-section-title {
+        margin-bottom: 18px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #e5e7eb;
+        font-size: 15px;
+        font-weight: 700;
+        color: #111827;
+      }
+
+      .form-group {
+        margin-bottom: 18px;
+      }
+
+      .form-group:last-child {
+        margin-bottom: 0;
+      }
+
+      .form-label {
+        display: block;
+        margin-bottom: 7px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+      }
+
+      .form-label .required {
+        color: #dc2626;
+      }
+
+      .form-control {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 11px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        outline: none;
+        background: #ffffff;
+        color: #111827;
+        font-family: inherit;
+        font-size: 14px;
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .form-control:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+
+      textarea.form-control {
+        min-height: 110px;
+        resize: vertical;
+      }
+
+      .form-help {
+        margin-top: 6px;
+        font-size: 12px;
+        color: #6b7280;
+      }
+
+      .category-type-options {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .type-option {
+        position: relative;
+      }
+
+      .type-option input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .type-option label {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 70px;
+        padding: 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        cursor: pointer;
+        transition:
+          border-color 0.2s ease,
+          background 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .type-option label:hover {
+        border-color: #9ca3af;
+      }
+
+      .type-option input:checked + label {
+        border-color: #2563eb;
+        background: #eff6ff;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.08);
+      }
+
+      .type-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        flex-shrink: 0;
+        border-radius: 9px;
+        font-size: 19px;
+      }
+
+      .type-icon.income {
+        background: #dcfce7;
+        color: #15803d;
+      }
+
+      .type-icon.expense {
+        background: #fee2e2;
+        color: #dc2626;
+      }
+
+      .type-content {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .type-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #111827;
+      }
+
+      .type-description {
+        font-size: 11px;
+        color: #6b7280;
+      }
+
+      .form-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-top: 22px;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      .form-actions .btn {
+        min-width: 110px;
+      }
+
+      .current-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #dcfce7;
+        color: #15803d;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      @media (max-width: 768px) {
+        .category-form-card {
+          padding: 20px;
+        }
+
+        .category-type-options {
+          grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+          flex-direction: column-reverse;
+          align-items: stretch;
+        }
+
+        .form-actions .btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+      <div th:replace="~{fragments/layout :: sidebar}"></div>
+
+      <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+      <main class="main">
+        <!-- TOPBAR -->
+
+        <div th:replace="~{fragments/layout :: topbar}"></div>
+
+        <!-- =================================================
+             CONTENT
+             ================================================= -->
+
+        <section class="content">
+          <!-- =================================================
+                 PAGE HEADER
+                 ================================================= -->
+
+          <div class="page-header">
+            <div>
+              <h1
+                th:text="${category.id == null
+                            ? 'Tambah Category'
+                            : 'Edit Category'}"
+              >
+                Tambah Category
+              </h1>
+
+              <p
+                th:text="${category.id == null
+                            ? 'Tambahkan kategori baru untuk transaksi FinTrack.'
+                            : 'Perbarui informasi kategori yang sudah ada.'}"
+              >
+                Tambahkan kategori baru untuk transaksi FinTrack.
+              </p>
+            </div>
+
+            <div>
+              <a th:href="@{/admin/categories}" class="btn btn-secondary">
+                ← Kembali
+              </a>
+            </div>
+          </div>
+
+          <!-- =================================================
+                 FORM
+                 ================================================= -->
+
+          <div class="category-form-wrapper">
+            <div class="category-form-card">
+              <form
+                method="post"
+                th:action="@{/admin/categories/save}"
+                th:object="${category}"
+              >
+                <!-- CSRF -->
+
+                <input
+                  type="hidden"
+                  th:name="${_csrf.parameterName}"
+                  th:value="${_csrf.token}"
+                />
+
+                <!-- ID -->
+
+                <input type="hidden" th:field="*{id}" />
+
+                <!-- =================================================
+                             BASIC INFORMATION
+                             ================================================= -->
+
+                <div class="form-section">
+                  <div class="form-section-title">Informasi Category</div>
+
+                  <!-- NAME -->
+
+                  <div class="form-group">
+                    <label for="name" class="form-label">
+                      Nama Category
+
+                      <span class="required"> * </span>
+                    </label>
+
+                    <input
+                      type="text"
+                      id="name"
+                      th:field="*{name}"
+                      class="form-control"
+                      placeholder="Contoh: Gaji, Makanan, Transportasi"
+                      maxlength="100"
+                      required
+                    />
+
+                    <div class="form-help">
+                      Gunakan nama yang mudah dikenali saat mencatat transaksi.
+                    </div>
+                  </div>
+
+                  <!-- TYPE -->
+
+                  <div class="form-group">
+                    <label class="form-label">
+                      Type
+
+                      <span class="required"> * </span>
+                    </label>
+
+                    <div class="category-type-options">
+                      <!-- INCOME -->
+
+                      <div class="type-option">
+                        <input
+                          type="radio"
+                          id="typeIncome"
+                          th:field="*{type}"
+                          value="INCOME"
+                        />
+
+                        <label for="typeIncome">
+                          <span class="type-icon income"> ↑ </span>
+
+                          <span class="type-content">
+                            <span class="type-title"> Income </span>
+
+                            <span class="type-description">
+                              Pemasukan atau pendapatan
+                            </span>
+                          </span>
+                        </label>
+                      </div>
+
+                      <!-- EXPENSE -->
+
+                      <div class="type-option">
+                        <input
+                          type="radio"
+                          id="typeExpense"
+                          th:field="*{type}"
+                          value="EXPENSE"
+                        />
+
+                        <label for="typeExpense">
+                          <span class="type-icon expense"> ↓ </span>
+
+                          <span class="type-content">
+                            <span class="type-title"> Expense </span>
+
+                            <span class="type-description">
+                              Pengeluaran atau biaya
+                            </span>
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- DESCRIPTION -->
+
+                  <div class="form-group">
+                    <label for="description" class="form-label">
+                      Description
+                    </label>
+
+                    <textarea
+                      id="description"
+                      th:field="*{description}"
+                      class="form-control"
+                      placeholder="Contoh: Pendapatan bulanan dari pekerjaan"
+                      maxlength="255"
+                    ></textarea>
+
+                    <div class="form-help">
+                      Opsional. Maksimal 255 karakter.
+                    </div>
+                  </div>
+
+                  <!-- STATUS -->
+
+                  <div class="form-group" th:if="${category.id != null}">
+                    <label for="status" class="form-label"> Status </label>
+
+                    <select
+                      id="status"
+                      th:field="*{status}"
+                      class="form-control"
+                    >
+                      <option value="ACTIVE">Active</option>
+
+                      <option value="INACTIVE">Inactive</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- =================================================
+                             ACTIONS
+                             ================================================= -->
+
+                <div class="form-actions">
+                  <a th:href="@{/admin/categories}" class="btn btn-secondary">
+                    Batal
+                  </a>
+
+                  <button type="submit" class="btn btn-primary">
+                    <span> ✓ </span>
+
+                    <span
+                      th:text="${category.id == null
+                                        ? 'Simpan Category'
+                                        : 'Simpan Perubahan'}"
+                    >
+                      Simpan Category
+                    </span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <div th:replace="~{fragments/layout :: mobileMenu}"></div>
+
+      <div th:replace="~{fragments/layout :: scripts}"></div>
+    </div>
+  </body>
+</html>

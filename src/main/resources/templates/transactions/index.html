@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>FinTrack - Transactions</title>
+
+    <link rel="stylesheet" th:href="@{/css/fintrack.css}" />
+
+    <style>
+      /* =================================================
+           TRANSACTION PAGE
+           ================================================= */
+
+      .transaction-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+
+        margin-bottom: 20px;
+      }
+
+      .transaction-info {
+        font-size: 13px;
+        color: #6b7280;
+      }
+
+      .transaction-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .transaction-code {
+        font-weight: 700;
+        color: #111827;
+      }
+
+      .transaction-date {
+        white-space: nowrap;
+        color: #4b5563;
+      }
+
+      .amount-income {
+        color: #16a34a;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .amount-expense {
+        color: #dc2626;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .description-cell {
+        max-width: 220px;
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .category-name {
+        font-weight: 600;
+        color: #374151;
+      }
+
+      .fund-source-name {
+        color: #6b7280;
+      }
+
+      .table-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        width: 32px;
+        height: 32px;
+
+        border-radius: 7px;
+
+        font-size: 14px;
+
+        transition:
+          background 0.2s ease,
+          color 0.2s ease;
+      }
+
+      .table-action.edit {
+        background: #eff6ff;
+        color: #2563eb;
+      }
+
+      .table-action.edit:hover {
+        background: #dbeafe;
+      }
+
+      .table-action.delete {
+        background: #fef2f2;
+        color: #dc2626;
+      }
+
+      .table-action.delete:hover {
+        background: #fee2e2;
+      }
+
+      .receipt-link {
+        white-space: nowrap;
+      }
+
+      .filter-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        margin-bottom: 18px;
+      }
+
+      .search-box {
+        position: relative;
+        flex: 1;
+        max-width: 320px;
+      }
+
+      .search-box input {
+        width: 100%;
+
+        padding: 10px 12px 10px 38px;
+
+        border: 1px solid #d1d5db;
+
+        border-radius: 8px;
+
+        outline: none;
+
+        font-family: inherit;
+        font-size: 13px;
+      }
+
+      .search-box input:focus {
+        border-color: #2563eb;
+
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+
+      .search-icon {
+        position: absolute;
+
+        left: 13px;
+        top: 50%;
+
+        transform: translateY(-50%);
+
+        color: #9ca3af;
+
+        font-size: 14px;
+
+        pointer-events: none;
+      }
+
+      .transaction-count {
+        display: inline-flex;
+
+        align-items: center;
+
+        padding: 5px 9px;
+
+        border-radius: 999px;
+
+        background: #f3f4f6;
+
+        color: #6b7280;
+
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .flash-message {
+        margin-bottom: 18px;
+      }
+
+      @media (max-width: 768px) {
+        .transaction-toolbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .transaction-actions {
+          width: 100%;
+        }
+
+        .transaction-actions .btn {
+          flex: 1;
+        }
+
+        .filter-bar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .search-box {
+          max-width: none;
+        }
+      }
+
+      /* =================================================
+   RESPONSIVE TABLE
+   ================================================= */
+
+      .table-card {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .table-wrapper {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+      }
+
+      .table-wrapper table {
+        width: 100%;
+        min-width: 1100px;
+        border-collapse: collapse;
+      }
+
+      .table-wrapper th,
+      .table-wrapper td {
+        white-space: nowrap;
+      }
+
+      @media (max-width: 768px) {
+        .table-card {
+          width: 100%;
+          max-width: 100%;
+          overflow: hidden;
+        }
+
+        .table-wrapper {
+          width: 100%;
+          max-width: 100%;
+          overflow-x: auto;
+          overflow-y: hidden;
+          -webkit-overflow-scrolling: touch;
+          touch-action: pan-x;
+        }
+
+        .table-wrapper table {
+          width: max-content;
+          min-width: 1100px;
+        }
+
+        .table-wrapper th,
+        .table-wrapper td {
+          white-space: nowrap;
+        }
+
+        /* CSS mobile yang sudah ada */
+        .transaction-toolbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .transaction-actions {
+          width: 100%;
+        }
+
+        .transaction-actions .btn {
+          flex: 1;
+        }
+
+        .filter-bar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .search-box {
+          max-width: none;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+      <div th:replace="~{fragments/layout :: sidebar}"></div>
+
+      <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+      <main class="main">
+        <!-- TOPBAR -->
+
+        <div th:replace="~{fragments/layout :: topbar}"></div>
+
+        <!-- =================================================
+             CONTENT
+             ================================================= -->
+
+        <section class="content">
+          <!-- PAGE HEADER -->
+
+          <div class="page-header">
+            <div>
+              <h1>Transactions</h1>
+
+              <p>Kelola seluruh pemasukan dan pengeluaran FinTrack.</p>
+            </div>
+
+            <div class="transaction-actions">
+              <a th:href="@{/transactions/new}" class="btn btn-primary">
+                Tambah Transaksi
+              </a>
+            </div>
+          </div>
+
+          <!-- =================================================
+                 FLASH MESSAGE
+                 ================================================= -->
+
+          <div
+            th:if="${success}"
+            class="alert alert-success flash-message"
+            th:text="${success}"
+          >
+            Transaksi berhasil disimpan.
+          </div>
+
+          <div
+            th:if="${error}"
+            class="alert alert-error flash-message"
+            th:text="${error}"
+          >
+            Terjadi kesalahan.
+          </div>
+
+          <!-- =================================================
+                 FILTER
+                 ================================================= -->
+
+          <div class="filter-bar">
+            <div class="search-box">
+              <span class="search-icon"> 🔍 </span>
+
+              <input
+                type="text"
+                id="transactionSearch"
+                placeholder="Cari transaksi..."
+              />
+            </div>
+
+            <span
+              class="transaction-count"
+              th:text="${#lists.size(transactions) + ' transaksi'}"
+            >
+              0 transaksi
+            </span>
+          </div>
+
+          <!-- =================================================
+                 TABLE
+                 ================================================= -->
+
+          <div class="card table-card">
+            <div class="table-wrapper">
+              <table class="data-table" id="transactionTable">
+                <thead>
+                  <tr>
+                    <th>Code</th>
+
+                    <th>Tanggal</th>
+
+                    <th>Type</th>
+
+                    <th>Category</th>
+
+                    <th>Fund Source</th>
+
+                    <th>Amount</th>
+
+                    <th>Description</th>
+
+                    <th>Bukti</th>
+
+                    <th>Created By</th>
+
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <!-- =================================================
+                                 TRANSACTION ROW
+                                 ================================================= -->
+
+                  <tr th:each="transaction : ${transactions}">
+                    <!-- CODE -->
+
+                    <td>
+                      <span
+                        class="transaction-code"
+                        th:text="${transaction.transactionCode}"
+                      >
+                        TRX-001
+                      </span>
+                    </td>
+
+                    <!-- DATE -->
+
+                    <td>
+                      <span
+                        class="transaction-date"
+                        th:text="${#temporals.format(
+                                            transaction.transactionDate,
+                                            'dd MMM yyyy'
+                                        )}"
+                      >
+                        06 Oct 2026
+                      </span>
+                    </td>
+
+                    <!-- TYPE -->
+
+                    <td>
+                      <span
+                        th:if="${transaction.type != null
+                                            and transaction.type.name() == 'INCOME'}"
+                        class="badge badge-income"
+                      >
+                        INCOME
+                      </span>
+
+                      <span
+                        th:if="${transaction.type != null
+                                            and transaction.type.name() == 'EXPENSE'}"
+                        class="badge badge-expense"
+                      >
+                        EXPENSE
+                      </span>
+                    </td>
+
+                    <!-- CATEGORY -->
+
+                    <td>
+                      <span
+                        class="category-name"
+                        th:if="${transaction.category != null}"
+                        th:text="${transaction.category.name}"
+                      >
+                        Category
+                      </span>
+
+                      <span
+                        th:unless="${transaction.category != null}"
+                        class="no-receipt"
+                      >
+                        -
+                      </span>
+                    </td>
+
+                    <!-- FUND SOURCE -->
+
+                    <td>
+                      <span
+                        class="fund-source-name"
+                        th:if="${transaction.fundSource != null}"
+                        th:text="${transaction.fundSource.name}"
+                      >
+                        Cash
+                      </span>
+
+                      <span
+                        th:unless="${transaction.fundSource != null}"
+                        class="no-receipt"
+                      >
+                        -
+                      </span>
+                    </td>
+
+                    <!-- AMOUNT -->
+
+                    <td>
+                      <span
+                        th:if="${transaction.type != null
+                                            and transaction.type.name() == 'INCOME'}"
+                        class="amount-income"
+                        th:text="${'+ Rp ' + #numbers.formatDecimal(
+                                            transaction.amount,
+                                            0,
+                                            'POINT',
+                                            0,
+                                            'COMMA'
+                                        )}"
+                      >
+                        + Rp 0
+                      </span>
+
+                      <span
+                        th:if="${transaction.type != null
+                                            and transaction.type.name() == 'EXPENSE'}"
+                        class="amount-expense"
+                        th:text="${'- Rp ' + #numbers.formatDecimal(
+                                            transaction.amount,
+                                            0,
+                                            'POINT',
+                                            0,
+                                            'COMMA'
+                                        )}"
+                      >
+                        - Rp 0
+                      </span>
+                    </td>
+
+                    <!-- DESCRIPTION -->
+
+                    <td>
+                      <div
+                        class="description-cell"
+                        th:if="${transaction.description != null
+                                            and !#strings.isEmpty(transaction.description)}"
+                        th:title="${transaction.description}"
+                        th:text="${transaction.description}"
+                      >
+                        Description
+                      </div>
+
+                      <span
+                        th:unless="${transaction.description != null
+                                            and !#strings.isEmpty(transaction.description)}"
+                        class="no-receipt"
+                      >
+                        -
+                      </span>
+                    </td>
+
+                    <!-- RECEIPT -->
+
+                    <td>
+                      <a
+                        th:if="${transaction.attachment != null
+                                            and !#strings.isEmpty(transaction.attachment)}"
+                        th:href="@{/transactions/attachment/{filename}(
+                                            filename=${transaction.attachment}
+                                        )}"
+                        target="_blank"
+                        class="receipt-link"
+                      >
+                        📎 Lihat
+                      </a>
+
+                      <span
+                        th:unless="${transaction.attachment != null
+                                            and !#strings.isEmpty(transaction.attachment)}"
+                        class="no-receipt"
+                      >
+                        -
+                      </span>
+                    </td>
+
+                    <!-- CREATED BY -->
+
+                    <td>
+                      <span
+                        th:if="${transaction.createdBy != null}"
+                        th:text="${transaction.createdBy}"
+                      >
+                        admin
+                      </span>
+
+                      <span
+                        th:unless="${transaction.createdBy != null}"
+                        class="no-receipt"
+                      >
+                        -
+                      </span>
+                    </td>
+
+                    <!-- ACTION -->
+
+                    <td>
+                      <div class="action-group">
+                        <!-- EDIT -->
+
+                        <a
+                          class="table-action edit"
+                          title="Edit transaksi"
+                          th:href="@{/transactions/edit/{id}(
+                                                id=${transaction.id}
+                                            )}"
+                        >
+                          ✏️
+                        </a>
+
+                        <!-- DELETE -->
+
+                        <form
+                          method="post"
+                          th:action="@{/transactions/delete/{id}(
+                                                id=${transaction.id}
+                                            )}"
+                          onsubmit="
+                            return confirm(
+                              'Yakin ingin menghapus transaksi ini?',
+                            );
+                          "
+                        >
+                          <input
+                            type="hidden"
+                            th:name="${_csrf.parameterName}"
+                            th:value="${_csrf.token}"
+                          />
+
+                          <button
+                            type="submit"
+                            class="table-action delete"
+                            title="Hapus transaksi"
+                          >
+                            🗑️
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- =================================================
+                                 EMPTY STATE
+                                 ================================================= -->
+
+                  <tr th:if="${#lists.isEmpty(transactions)}">
+                    <td colspan="10">
+                      <div class="empty-state">
+                        <div class="empty-state-icon">💰</div>
+
+                        <div class="empty-state-title">Belum ada transaksi</div>
+
+                        <div class="empty-state-text">
+                          Mulai dengan menambahkan transaksi pertama Anda.
+                        </div>
+
+                        <br />
+
+                        <a
+                          th:href="@{/transactions/new}"
+                          class="btn btn-primary"
+                        >
+                          + Tambah Transaksi
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <div th:replace="~{fragments/layout :: mobileMenu}"></div>
+
+      <div th:replace="~{fragments/layout :: scripts}"></div>
+    </div>
+
+    <!-- =========================================================
+     SEARCH
+     ========================================================= -->
+
+    <script>
+      const searchInput = document.getElementById("transactionSearch");
+
+      const table = document.getElementById("transactionTable");
+
+      if (searchInput && table) {
+        searchInput.addEventListener("input", function () {
+          const keyword = this.value.toLowerCase().trim();
+
+          const rows = table.querySelectorAll("tbody tr");
+
+          rows.forEach(function (row) {
+            if (row.querySelector(".empty-state")) {
+              return;
+            }
+
+            const text = row.textContent.toLowerCase();
+
+            row.style.display = text.includes(keyword) ? "" : "none";
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

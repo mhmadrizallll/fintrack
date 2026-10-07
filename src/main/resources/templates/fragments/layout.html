@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+    <aside class="sidebar" th:fragment="sidebar" id="fintrackSidebar">
+      <!-- CLOSE BUTTON MOBILE -->
+      <button
+        type="button"
+        class="sidebar-close"
+        onclick="toggleSidebar()"
+        aria-label="Tutup menu"
+      >
+        ×
+      </button>
+
+      <div class="sidebar-brand">
+        <div class="logo">F</div>
+
+        <div>
+          <div class="brand-name">FinTrack</div>
+          <div class="brand-subtitle">Financial Management</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <!-- MAIN -->
+
+        <div class="nav-section">
+          <div class="nav-section-title">Main</div>
+
+          <a
+            th:href="@{/dashboard}"
+            class="nav-item"
+            th:classappend="${activeMenu == 'dashboard'} ? ' active' : ''"
+            onclick="closeSidebarOnMobile()"
+          >
+            <span class="nav-icon">🏠</span>
+            <span>Dashboard</span>
+          </a>
+        </div>
+
+        <!-- FINANCE -->
+        <div class="nav-section">
+          <div class="nav-section-title">Finance</div>
+
+          <a
+            th:href="@{/transactions}"
+            class="nav-item"
+            th:classappend="${activeMenu == 'transactions'} ? ' active' : ''"
+            onclick="closeSidebarOnMobile()"
+          >
+            <span class="nav-icon">💰</span>
+            <span>Transactions</span>
+          </a>
+
+          <a
+            th:href="@{/admin/categories}"
+            class="nav-item"
+            th:classappend="${activeMenu == 'categories'} ? ' active' : ''"
+            onclick="closeSidebarOnMobile()"
+          >
+            <span class="nav-icon">🏷️</span>
+            <span>Categories</span>
+          </a>
+
+          <a
+            th:href="@{/admin/fund-sources}"
+            class="nav-item"
+            th:classappend="${activeMenu == 'fund-sources'} ? ' active' : ''"
+            onclick="closeSidebarOnMobile()"
+          >
+            <span class="nav-icon">💳</span>
+            <span>Fund Sources</span>
+          </a>
+        </div>
+
+        <!-- REPORTS -->
+
+        <div class="nav-section">
+          <div class="nav-section-title">Reports</div>
+
+          <a
+            th:href="@{/reports/daily}"
+            class="nav-item"
+            th:classappend="${activeMenu == 'daily-report'} ? ' active' : ''"
+            onclick="closeSidebarOnMobile()"
+          >
+            <span class="nav-icon">📅</span>
+            <span>Daily Report</span>
+          </a>
+
+          <a
+            th:href="@{/reports/monthly}"
+            class="nav-item"
+            th:classappend="${activeMenu == 'monthly-report'} ? ' active' : ''"
+            onclick="closeSidebarOnMobile()"
+          >
+            <span class="nav-icon">📊</span>
+            <span>Monthly Report</span>
+          </a>
+        </div>
+
+        <!-- Users -->
+        <div
+          class="nav-section"
+          th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+        >
+          <div class="nav-section-title">Users</div>
+
+          <a
+            th:href="@{/admin/users}"
+            class="nav-item"
+            th:classappend="${activeMenu == 'users'} ? ' active'"
+          >
+            <span class="nav-icon">👤</span>
+            <span>User Management</span>
+          </a>
+        </div>
+      </nav>
+
+      <!-- USER -->
+
+      <div class="sidebar-footer">
+        <div class="user-mini">
+          <div class="user-avatar">
+            <span
+              th:if="${#authentication != null
+                            and #authentication.name != null
+                            and #authentication.name.length() > 0}"
+              th:text="${#strings.substring(
+                            #authentication.name,
+                            0,
+                            1
+                        ).toUpperCase()}"
+            >
+              A
+            </span>
+          </div>
+
+          <div class="user-info">
+            <div class="user-name" th:text="${#authentication.name}">admin</div>
+
+            <div class="user-role">Administrator</div>
+          </div>
+        </div>
+
+        <form method="post" th:action="@{/logout}">
+          <input
+            type="hidden"
+            th:name="${_csrf.parameterName}"
+            th:value="${_csrf.token}"
+          />
+
+          <button type="submit" class="nav-item logout-button">
+            <span class="nav-icon">🚪</span>
+            <span>Logout</span>
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- =====================================================
+         SIDEBAR OVERLAY MOBILE
+         ===================================================== -->
+
+    <div
+      class="sidebar-overlay"
+      id="sidebarOverlay"
+      onclick="toggleSidebar()"
+      th:fragment="mobileMenu"
+    ></div>
+
+    <!-- =====================================================
+         TOPBAR
+         ===================================================== -->
+
+    <header class="topbar" th:fragment="topbar">
+      <!-- MOBILE HAMBURGER -->
+
+      <button
+        type="button"
+        class="mobile-menu"
+        onclick="toggleSidebar()"
+        aria-label="Buka menu"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <div class="topbar-title">
+        <div class="page-title" th:text="${pageTitle}">Dashboard</div>
+
+        <div class="page-subtitle" th:text="${pageSubtitle}">
+          Ringkasan kondisi keuangan
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <span class="topbar-date" id="currentDate"></span>
+      </div>
+    </header>
+
+    <!-- =====================================================
+         SCRIPT
+         ===================================================== -->
+
+    <script th:fragment="scripts">
+      function toggleSidebar() {
+        console.log("HAMBURGER DIKLIK");
+
+        const sidebar = document.getElementById("fintrackSidebar");
+        const overlay = document.getElementById("sidebarOverlay");
+
+        console.log("sidebar:", sidebar);
+        console.log("overlay:", overlay);
+
+        if (!sidebar) {
+          console.error("Sidebar tidak ditemukan!");
+          return;
+        }
+
+        sidebar.classList.toggle("open");
+
+        if (overlay) {
+          overlay.classList.toggle("show");
+        }
+
+        document.body.classList.toggle(
+          "sidebar-open",
+          sidebar.classList.contains("open"),
+        );
+
+        console.log("Sidebar class:", sidebar.className);
+      }
+
+      function closeSidebarOnMobile() {
+        if (window.innerWidth <= 768) {
+          const sidebar = document.getElementById("fintrackSidebar");
+          const overlay = document.getElementById("sidebarOverlay");
+
+          if (sidebar) {
+            sidebar.classList.remove("open");
+          }
+
+          if (overlay) {
+            overlay.classList.remove("show");
+          }
+
+          document.body.classList.remove("sidebar-open");
+        }
+      }
+
+      function updateDate() {
+        const element = document.getElementById("currentDate");
+
+        if (!element) {
+          return;
+        }
+
+        const now = new Date();
+
+        element.textContent = now.toLocaleDateString("id-ID", {
+          weekday: "long",
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        });
+      }
+
+      updateDate();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,737 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>FinTrack - Tambah User</title>
+
+    <link rel="stylesheet" th:href="@{/css/fintrack.css}" />
+
+    <style>
+      /* =================================================
+           USER FORM PAGE
+           ================================================= */
+
+      .user-form-page {
+        max-width: 1000px;
+      }
+
+      .user-form-layout {
+        display: grid;
+        grid-template-columns: 280px minmax(0, 1fr);
+        gap: 20px;
+        align-items: start;
+      }
+
+      /* =================================================
+           INFO CARD
+           ================================================= */
+
+      .user-info-card {
+        padding: 24px;
+      }
+
+      .user-profile-icon {
+        width: 64px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #eff6ff, #dbeafe);
+        color: #2563eb;
+        font-size: 28px;
+        margin-bottom: 18px;
+      }
+
+      .user-info-title {
+        margin: 0 0 8px;
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+      }
+
+      .user-info-description {
+        margin: 0;
+        color: #6b7280;
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      .user-info-list {
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      .user-info-item {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+
+      .user-info-item:last-child {
+        margin-bottom: 0;
+      }
+
+      .user-info-item-icon {
+        width: 30px;
+        height: 30px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: #f3f4f6;
+        font-size: 13px;
+      }
+
+      .user-info-item-content strong {
+        display: block;
+        font-size: 12px;
+        color: #374151;
+        margin-bottom: 3px;
+      }
+
+      .user-info-item-content span {
+        display: block;
+        font-size: 11px;
+        line-height: 1.5;
+        color: #9ca3af;
+      }
+
+      /* =================================================
+           FORM CARD
+           ================================================= */
+
+      .user-form-card {
+        overflow: hidden;
+      }
+
+      .user-form-header {
+        padding: 22px 24px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .user-form-header h2 {
+        margin: 0 0 5px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #111827;
+      }
+
+      .user-form-header p {
+        margin: 0;
+        font-size: 12px;
+        color: #6b7280;
+      }
+
+      .user-form-body {
+        padding: 24px;
+      }
+
+      .user-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+      }
+
+      .form-field {
+        min-width: 0;
+      }
+
+      .form-field.full {
+        grid-column: 1 / -1;
+      }
+
+      .form-field label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #374151;
+      }
+
+      .required {
+        color: #ef4444;
+      }
+
+      .form-field input,
+      .form-field select {
+        width: 100%;
+        box-sizing: border-box;
+        height: 42px;
+        padding: 0 13px;
+        border: 1px solid #d1d5db;
+        border-radius: 9px;
+        background: #fff;
+        color: #111827;
+        font-family: inherit;
+        font-size: 13px;
+        outline: none;
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease,
+          background 0.2s ease;
+      }
+
+      .form-field input::placeholder {
+        color: #9ca3af;
+      }
+
+      .form-field input:hover,
+      .form-field select:hover {
+        border-color: #9ca3af;
+      }
+
+      .form-field input:focus,
+      .form-field select:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+
+      .field-hint {
+        margin-top: 7px;
+        font-size: 11px;
+        color: #9ca3af;
+        line-height: 1.5;
+      }
+
+      /* =================================================
+           PASSWORD
+           ================================================= */
+
+      .password-wrapper {
+        position: relative;
+      }
+
+      .password-wrapper input {
+        padding-right: 44px;
+      }
+
+      .password-toggle {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 32px;
+        height: 32px;
+        border: 0;
+        background: transparent;
+        border-radius: 7px;
+        cursor: pointer;
+        color: #9ca3af;
+        font-size: 14px;
+      }
+
+      .password-toggle:hover {
+        background: #f3f4f6;
+        color: #4b5563;
+      }
+
+      /* =================================================
+           SELECT CUSTOM
+           ================================================= */
+
+      .select-wrapper {
+        position: relative;
+      }
+
+      .select-wrapper select {
+        appearance: none;
+        padding-right: 40px;
+        cursor: pointer;
+      }
+
+      .select-arrow {
+        position: absolute;
+        right: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        pointer-events: none;
+        font-size: 11px;
+      }
+
+      /* =================================================
+           ROLE / STATUS PREVIEW
+           ================================================= */
+
+      .option-preview {
+        display: flex;
+        gap: 8px;
+        margin-top: 9px;
+      }
+
+      .preview-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 700;
+      }
+
+      .preview-admin {
+        background: #ede9fe;
+        color: #7c3aed;
+      }
+
+      .preview-user {
+        background: #eff6ff;
+        color: #2563eb;
+      }
+
+      .preview-active {
+        background: #dcfce7;
+        color: #15803d;
+      }
+
+      /* =================================================
+           FORM FOOTER
+           ================================================= */
+
+      .user-form-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 18px 24px;
+        background: #f9fafb;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      .form-required-info {
+        font-size: 11px;
+        color: #9ca3af;
+      }
+
+      .form-required-info span {
+        color: #ef4444;
+      }
+
+      .form-footer-actions {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+      }
+
+      /* =================================================
+           ALERT
+           ================================================= */
+
+      .user-error {
+        max-width: 1000px;
+        margin-bottom: 18px;
+      }
+
+      /* =================================================
+           MOBILE
+           ================================================= */
+
+      @media (max-width: 900px) {
+        .user-form-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .user-info-card {
+          display: none;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .user-form-page {
+          max-width: none;
+        }
+
+        .user-form-grid {
+          grid-template-columns: 1fr;
+          gap: 17px;
+        }
+
+        .form-field.full {
+          grid-column: auto;
+        }
+
+        .user-form-header,
+        .user-form-body {
+          padding: 20px;
+        }
+
+        .user-form-footer {
+          align-items: flex-start;
+          flex-direction: column;
+          padding: 17px 20px;
+        }
+
+        .form-footer-actions {
+          width: 100%;
+        }
+
+        .form-footer-actions .btn {
+          flex: 1;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+      <div th:replace="~{fragments/layout :: sidebar}"></div>
+
+      <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+      <main class="main">
+        <!-- TOPBAR -->
+
+        <div th:replace="~{fragments/layout :: topbar}"></div>
+
+        <!-- =================================================
+             CONTENT
+             ================================================= -->
+
+        <section class="content">
+          <div class="user-form-page">
+            <!-- =================================================
+                     PAGE HEADER
+                     ================================================= -->
+
+            <div class="page-header">
+              <div>
+                <h1>Tambah User</h1>
+
+                <p>Buat akun baru untuk mengakses sistem FinTrack.</p>
+              </div>
+            </div>
+
+            <!-- =================================================
+                     ERROR
+                     ================================================= -->
+
+            <div th:if="${error}" class="alert alert-error user-error">
+              <span>!</span>
+
+              <span th:text="${error}"> Terjadi kesalahan. </span>
+            </div>
+
+            <!-- =================================================
+                     FORM LAYOUT
+                     ================================================= -->
+
+            <div class="user-form-layout">
+              <!-- =================================================
+                         INFORMATION CARD
+                         ================================================= -->
+
+              <div class="card user-info-card">
+                <div class="user-profile-icon">👤</div>
+
+                <h2 class="user-info-title">User Baru</h2>
+
+                <p class="user-info-description">
+                  Tambahkan akun pengguna untuk memberikan akses ke sistem
+                  FinTrack.
+                </p>
+
+                <div class="user-info-list">
+                  <div class="user-info-item">
+                    <div class="user-info-item-icon">🔐</div>
+
+                    <div class="user-info-item-content">
+                      <strong>Password Aman</strong>
+
+                      <span>
+                        Password disimpan menggunakan enkripsi BCrypt.
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="user-info-item">
+                    <div class="user-info-item-icon">👑</div>
+
+                    <div class="user-info-item-content">
+                      <strong>Role</strong>
+
+                      <span> Tentukan hak akses pengguna melalui role. </span>
+                    </div>
+                  </div>
+
+                  <div class="user-info-item">
+                    <div class="user-info-item-icon">✓</div>
+
+                    <div class="user-info-item-content">
+                      <strong>Status</strong>
+
+                      <span> User inactive tidak dapat login ke sistem. </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- =================================================
+                         FORM CARD
+                         ================================================= -->
+
+              <div class="card user-form-card">
+                <!-- FORM HEADER -->
+
+                <div class="user-form-header">
+                  <h2>Informasi Akun</h2>
+
+                  <p>Lengkapi data akun pengguna di bawah ini.</p>
+                </div>
+
+                <!-- FORM -->
+
+                <form method="post" th:action="@{/admin/users}">
+                  <!-- CSRF -->
+
+                  <input
+                    type="hidden"
+                    th:name="${_csrf.parameterName}"
+                    th:value="${_csrf.token}"
+                  />
+
+                  <div class="user-form-body">
+                    <div class="user-form-grid">
+                      <!-- =================================================
+                                         USERNAME
+                                         ================================================= -->
+
+                      <div class="form-field">
+                        <label for="username">
+                          Username
+                          <span class="required">*</span>
+                        </label>
+
+                        <input
+                          type="text"
+                          id="username"
+                          name="username"
+                          th:value="${username}"
+                          placeholder="contoh: rizal"
+                          autocomplete="username"
+                          required
+                        />
+
+                        <div class="field-hint">
+                          Digunakan saat login ke FinTrack.
+                        </div>
+                      </div>
+
+                      <!-- =================================================
+                                         PASSWORD
+                                         ================================================= -->
+
+                      <div class="form-field">
+                        <label for="password">
+                          Password
+                          <span class="required">*</span>
+                        </label>
+
+                        <div class="password-wrapper">
+                          <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Masukkan password"
+                            autocomplete="new-password"
+                            required
+                          />
+
+                          <button
+                            type="button"
+                            class="password-toggle"
+                            onclick="togglePassword()"
+                            title="Tampilkan password"
+                          >
+                            👁
+                          </button>
+                        </div>
+
+                        <div class="field-hint">
+                          Password akan diamankan dengan BCrypt.
+                        </div>
+                      </div>
+
+                      <!-- =================================================
+                                         FULL NAME
+                                         ================================================= -->
+
+                      <div class="form-field">
+                        <label for="fullName"> Nama Lengkap </label>
+
+                        <input
+                          type="text"
+                          id="fullName"
+                          name="fullName"
+                          th:value="${fullName}"
+                          placeholder="Contoh: Muhammad Rizal"
+                          autocomplete="name"
+                        />
+                      </div>
+
+                      <!-- =================================================
+                                         EMAIL
+                                         ================================================= -->
+
+                      <div class="form-field">
+                        <label for="email"> Email </label>
+
+                        <input
+                          type="email"
+                          id="email"
+                          name="email"
+                          th:value="${email}"
+                          placeholder="nama@email.com"
+                          autocomplete="email"
+                        />
+                      </div>
+
+                      <!-- =================================================
+                                         ROLE
+                                         ================================================= -->
+
+                      <div class="form-field">
+                        <label for="role">
+                          Role
+                          <span class="required">*</span>
+                        </label>
+
+                        <div class="select-wrapper">
+                          <select id="role" name="role" required>
+                            <option
+                              value="USER"
+                              th:selected="${role == null or role == 'USER'}"
+                            >
+                              USER
+                            </option>
+
+                            <option
+                              value="ADMIN"
+                              th:selected="${role == 'ADMIN'}"
+                            >
+                              ADMIN
+                            </option>
+                          </select>
+
+                          <span class="select-arrow"> ▼ </span>
+                        </div>
+
+                        <div class="option-preview">
+                          <span class="preview-badge preview-user">
+                            👤 USER
+                          </span>
+
+                          <span class="field-hint"> Akses standar </span>
+                        </div>
+                      </div>
+
+                      <!-- =================================================
+                                         STATUS
+                                         ================================================= -->
+
+                      <div class="form-field">
+                        <label for="status">
+                          Status
+                          <span class="required">*</span>
+                        </label>
+
+                        <div class="select-wrapper">
+                          <select id="status" name="status" required>
+                            <option
+                              value="ACTIVE"
+                              th:selected="${status == null or status == 'ACTIVE'}"
+                            >
+                              ACTIVE
+                            </option>
+
+                            <option
+                              value="INACTIVE"
+                              th:selected="${status == 'INACTIVE'}"
+                            >
+                              INACTIVE
+                            </option>
+                          </select>
+
+                          <span class="select-arrow"> ▼ </span>
+                        </div>
+
+                        <div class="option-preview">
+                          <span class="preview-badge preview-active">
+                            ● ACTIVE
+                          </span>
+
+                          <span class="field-hint"> Dapat login </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- =================================================
+                                 FORM FOOTER
+                                 ================================================= -->
+
+                  <div class="user-form-footer">
+                    <div class="form-required-info">
+                      <span>*</span>
+                      Field wajib diisi
+                    </div>
+
+                    <div class="form-footer-actions">
+                      <a th:href="@{/admin/users}" class="btn btn-secondary">
+                        Batal
+                      </a>
+
+                      <button type="submit" class="btn btn-primary">
+                        ✓ Simpan User
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- MOBILE MENU -->
+
+      <div th:replace="~{fragments/layout :: mobileMenu}"></div>
+
+      <!-- SCRIPTS -->
+
+      <div th:replace="~{fragments/layout :: scripts}"></div>
+    </div>
+
+    <!-- =========================================================
+     PASSWORD TOGGLE
+     ========================================================= -->
+
+    <script>
+      function togglePassword() {
+        const input = document.getElementById("password");
+
+        const button = document.querySelector(".password-toggle");
+
+        if (input.type === "password") {
+          input.type = "text";
+
+          button.textContent = "🙈";
+        } else {
+          input.type = "password";
+
+          button.textContent = "👁";
+        }
+      }
+    </script>
+  </body>
+</html>

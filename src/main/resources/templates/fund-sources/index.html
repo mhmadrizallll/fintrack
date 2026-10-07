@@ -1,0 +1,556 @@
+<!doctype html>
+
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>FinTrack - Fund Sources</title>
+
+    <link rel="stylesheet" th:href="@{/css/fintrack.css}" />
+
+    <style>
+      /* =================================================
+         FUND SOURCE PAGE
+         ================================================= */
+
+      .fund-source-toolbar {
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 15px;
+
+        margin-bottom: 20px;
+      }
+
+      .fund-source-info {
+        font-size: 13px;
+
+        color: #6b7280;
+      }
+
+      .fund-source-actions {
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+      }
+
+      .fund-source-name {
+        font-weight: 700;
+
+        color: #111827;
+      }
+
+      .fund-source-description {
+        max-width: 280px;
+
+        white-space: nowrap;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+      }
+
+      .fund-source-type {
+        display: inline-flex;
+
+        align-items: center;
+
+        padding: 4px 9px;
+
+        border-radius: 999px;
+
+        font-size: 11px;
+
+        font-weight: 600;
+      }
+
+      .fund-source-type-cash {
+        background: #ecfdf5;
+
+        color: #15803d;
+      }
+
+      .fund-source-type-bank {
+        background: #eff6ff;
+
+        color: #2563eb;
+      }
+
+      .fund-source-type-ewallet {
+        background: #f5f3ff;
+
+        color: #7c3aed;
+      }
+
+      .fund-source-type-other {
+        background: #f3f4f6;
+
+        color: #6b7280;
+      }
+
+      .fund-source-status {
+        display: inline-flex;
+
+        align-items: center;
+
+        padding: 4px 9px;
+
+        border-radius: 999px;
+
+        font-size: 11px;
+
+        font-weight: 600;
+      }
+
+      .fund-source-status-active {
+        background: #ecfdf5;
+
+        color: #15803d;
+      }
+
+      .fund-source-status-inactive {
+        background: #f3f4f6;
+
+        color: #6b7280;
+      }
+
+      .fund-source-count {
+        display: inline-flex;
+
+        align-items: center;
+
+        padding: 5px 9px;
+
+        border-radius: 999px;
+
+        background: #f3f4f6;
+
+        color: #6b7280;
+
+        font-size: 11px;
+
+        font-weight: 600;
+      }
+
+      .filter-bar {
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+        margin-bottom: 18px;
+      }
+
+      .search-box {
+        position: relative;
+
+        flex: 1;
+
+        max-width: 320px;
+      }
+
+      .search-box input {
+        width: 100%;
+
+        padding: 10px 12px 10px 38px;
+
+        border: 1px solid #d1d5db;
+
+        border-radius: 8px;
+
+        outline: none;
+
+        font-family: inherit;
+
+        font-size: 13px;
+      }
+
+      .search-box input:focus {
+        border-color: #2563eb;
+
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+
+      .search-icon {
+        position: absolute;
+
+        left: 13px;
+
+        top: 50%;
+
+        transform: translateY(-50%);
+
+        color: #9ca3af;
+
+        font-size: 14px;
+
+        pointer-events: none;
+      }
+
+      .flash-message {
+        margin-bottom: 18px;
+      }
+
+      @media (max-width: 768px) {
+        .fund-source-toolbar {
+          align-items: flex-start;
+
+          flex-direction: column;
+        }
+
+        .fund-source-actions {
+          width: 100%;
+        }
+
+        .fund-source-actions .btn {
+          flex: 1;
+        }
+
+        .filter-bar {
+          flex-direction: column;
+
+          align-items: stretch;
+        }
+
+        .search-box {
+          max-width: none;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- =====================================================
+         APP
+         ===================================================== -->
+
+    <div class="app">
+      <!-- =====================================================
+           SIDEBAR
+           ===================================================== -->
+
+      <div th:replace="~{fragments/layout :: sidebar}"></div>
+
+      <!-- =====================================================
+           MAIN
+           ===================================================== -->
+
+      <main class="main">
+        <!-- TOPBAR -->
+
+        <div th:replace="~{fragments/layout :: topbar}"></div>
+
+        <!-- =================================================
+             CONTENT
+             ================================================= -->
+
+        <section class="content">
+          <!-- PAGE HEADER -->
+
+          <div class="page-header">
+            <div>
+              <h1>Fund Sources</h1>
+
+              <p>Kelola sumber dana yang digunakan dalam transaksi FinTrack.</p>
+            </div>
+
+            <div class="fund-source-actions">
+              <a th:href="@{/admin/fund-sources/new}" class="btn btn-primary">
+                <span> + </span>
+
+                Tambah Fund Source
+              </a>
+            </div>
+          </div>
+
+          <!-- =================================================
+               FLASH MESSAGE
+               ================================================= -->
+
+          <div
+            th:if="${success}"
+            class="alert alert-success flash-message"
+            th:text="${success}"
+          >
+            Fund Source berhasil disimpan.
+          </div>
+
+          <div
+            th:if="${error}"
+            class="alert alert-error flash-message"
+            th:text="${error}"
+          >
+            Terjadi kesalahan.
+          </div>
+
+          <!-- =================================================
+               FILTER
+               ================================================= -->
+
+          <div class="filter-bar">
+            <div class="search-box">
+              <span class="search-icon"> 🔍 </span>
+
+              <input
+                type="text"
+                id="fundSourceSearch"
+                placeholder="Cari fund source..."
+              />
+            </div>
+
+            <span
+              class="fund-source-count"
+              th:text="${#lists.size(fundSources) + ' fund source'}"
+            >
+              0 fund source
+            </span>
+          </div>
+
+          <!-- =================================================
+               TABLE
+               ================================================= -->
+
+          <div class="card table-card">
+            <div class="table-wrapper">
+              <table class="data-table" id="fundSourceTable">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+
+                    <th>Nama</th>
+
+                    <th>Type</th>
+
+                    <th>Description</th>
+
+                    <th>Status</th>
+
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <!-- =================================================
+                       FUND SOURCE ROW
+                       ================================================= -->
+
+                  <tr th:each="fundSource : ${fundSources}">
+                    <!-- ID -->
+
+                    <td>
+                      <span th:text="${fundSource.id}"> 1 </span>
+                    </td>
+
+                    <!-- NAME -->
+
+                    <td>
+                      <span
+                        class="fund-source-name"
+                        th:text="${fundSource.name}"
+                      >
+                        Cash
+                      </span>
+                    </td>
+
+                    <!-- TYPE -->
+
+                    <td>
+                      <span
+                        th:if="${fundSource.type != null
+                                  and fundSource.type.toUpperCase() == 'CASH'}"
+                        class="fund-source-type fund-source-type-cash"
+                      >
+                        CASH
+                      </span>
+
+                      <span
+                        th:if="${fundSource.type != null
+                                  and fundSource.type.toUpperCase() == 'BANK'}"
+                        class="fund-source-type fund-source-type-bank"
+                      >
+                        BANK
+                      </span>
+
+                      <span
+                        th:if="${fundSource.type != null
+                                  and fundSource.type.toUpperCase() == 'EWALLET'}"
+                        class="fund-source-type fund-source-type-ewallet"
+                      >
+                        E-WALLET
+                      </span>
+
+                      <span
+                        th:if="${fundSource.type != null
+                                  and fundSource.type.toUpperCase() != 'CASH'
+                                  and fundSource.type.toUpperCase() != 'BANK'
+                                  and fundSource.type.toUpperCase() != 'EWALLET'}"
+                        class="fund-source-type fund-source-type-other"
+                        th:text="${fundSource.type}"
+                      >
+                        OTHER
+                      </span>
+                    </td>
+
+                    <!-- DESCRIPTION -->
+
+                    <td>
+                      <div
+                        class="fund-source-description"
+                        th:if="${fundSource.description != null
+                                  and !#strings.isEmpty(fundSource.description)}"
+                        th:title="${fundSource.description}"
+                        th:text="${fundSource.description}"
+                      >
+                        Uang tunai
+                      </div>
+
+                      <span
+                        th:unless="${fundSource.description != null
+                                      and !#strings.isEmpty(fundSource.description)}"
+                        class="no-receipt"
+                      >
+                        -
+                      </span>
+                    </td>
+
+                    <!-- STATUS -->
+
+                    <td>
+                      <span
+                        th:if="${fundSource.status == 'ACTIVE'}"
+                        class="fund-source-status fund-source-status-active"
+                      >
+                        ACTIVE
+                      </span>
+
+                      <span
+                        th:if="${fundSource.status != 'ACTIVE'}"
+                        class="fund-source-status fund-source-status-inactive"
+                        th:text="${fundSource.status}"
+                      >
+                        INACTIVE
+                      </span>
+                    </td>
+
+                    <!-- ACTION -->
+
+                    <td>
+                      <div class="action-group">
+                        <!-- EDIT -->
+
+                        <a
+                          class="table-action edit"
+                          title="Edit fund source"
+                          th:href="@{/admin/fund-sources/edit/{id}(
+                                        id=${fundSource.id}
+                                      )}"
+                        >
+                          ✏️
+                        </a>
+
+                        <!-- DELETE / DEACTIVATE -->
+
+                        <form
+                          method="post"
+                          th:action="@{/admin/fund-sources/delete/{id}(
+                                        id=${fundSource.id}
+                                      )}"
+                          onsubmit="
+                            return confirm('Nonaktifkan fund source ini?');
+                          "
+                        >
+                          <input
+                            type="hidden"
+                            th:name="${_csrf.parameterName}"
+                            th:value="${_csrf.token}"
+                          />
+
+                          <button
+                            type="submit"
+                            class="table-action delete"
+                            title="Nonaktifkan fund source"
+                          >
+                            🗑️
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- =================================================
+                       EMPTY STATE
+                       ================================================= -->
+
+                  <tr th:if="${#lists.isEmpty(fundSources)}">
+                    <td colspan="6">
+                      <div class="empty-state">
+                        <div class="empty-state-icon">💳</div>
+
+                        <div class="empty-state-title">
+                          Belum ada fund source
+                        </div>
+
+                        <div class="empty-state-text">
+                          Mulai dengan menambahkan fund source pertama Anda.
+                        </div>
+
+                        <br />
+
+                        <a
+                          th:href="@{/admin/fund-sources/new}"
+                          class="btn btn-primary"
+                        >
+                          + Tambah Fund Source
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <div th:replace="~{fragments/layout :: mobileMenu}"></div>
+
+      <div th:replace="~{fragments/layout :: scripts}"></div>
+    </div>
+
+    <!-- =========================================================
+         SEARCH
+         ========================================================= -->
+
+    <script>
+      const searchInput = document.getElementById("fundSourceSearch");
+
+      const table = document.getElementById("fundSourceTable");
+
+      if (searchInput && table) {
+        searchInput.addEventListener("input", function () {
+          const keyword = this.value.toLowerCase().trim();
+
+          const rows = table.querySelectorAll("tbody tr");
+
+          rows.forEach(function (row) {
+            if (row.querySelector(".empty-state")) {
+              return;
+            }
+
+            const text = row.textContent.toLowerCase();
+
+            row.style.display = text.includes(keyword) ? "" : "none";
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

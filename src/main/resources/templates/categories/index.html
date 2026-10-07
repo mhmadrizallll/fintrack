@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>FinTrack - Categories</title>
+
+    <link rel="stylesheet" th:href="@{/css/fintrack.css}" />
+
+    <style>
+      /* =================================================
+           CATEGORY PAGE
+           ================================================= */
+
+      .category-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .category-info {
+        font-size: 13px;
+        color: #6b7280;
+      }
+
+      .category-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .category-name {
+        font-weight: 700;
+        color: #111827;
+      }
+
+      .category-description {
+        max-width: 320px;
+        color: #6b7280;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .category-type-income {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #dcfce7;
+        color: #15803d;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .category-type-expense {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #fee2e2;
+        color: #dc2626;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .category-status-active {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #dcfce7;
+        color: #15803d;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .category-status-inactive {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #f3f4f6;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .category-search {
+        position: relative;
+        flex: 1;
+        max-width: 320px;
+      }
+
+      .category-search input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 12px 10px 38px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        outline: none;
+        font-family: inherit;
+        font-size: 13px;
+      }
+
+      .category-search input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+
+      .category-search-icon {
+        position: absolute;
+        left: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        font-size: 14px;
+        pointer-events: none;
+      }
+
+      .category-count {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #f3f4f6;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .category-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 7px;
+        font-size: 14px;
+        text-decoration: none;
+        cursor: pointer;
+        transition:
+          background 0.2s ease,
+          color 0.2s ease;
+      }
+
+      .category-action.edit {
+        background: #eff6ff;
+        color: #2563eb;
+      }
+
+      .category-action.edit:hover {
+        background: #dbeafe;
+      }
+
+      .category-action.delete {
+        background: #fef2f2;
+        color: #dc2626;
+      }
+
+      .category-action.delete:hover {
+        background: #fee2e2;
+      }
+
+      .category-empty {
+        text-align: center;
+        padding: 50px 20px;
+      }
+
+      .category-empty-icon {
+        font-size: 42px;
+        margin-bottom: 15px;
+      }
+
+      .category-empty-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 8px;
+      }
+
+      .category-empty-text {
+        font-size: 13px;
+        color: #6b7280;
+        margin-bottom: 20px;
+      }
+
+      @media (max-width: 768px) {
+        .category-toolbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .category-actions {
+          width: 100%;
+        }
+
+        .category-actions .btn {
+          flex: 1;
+        }
+
+        .category-search {
+          max-width: none;
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+      <div th:replace="~{fragments/layout :: sidebar}"></div>
+
+      <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+      <main class="main">
+        <!-- TOPBAR -->
+
+        <div th:replace="~{fragments/layout :: topbar}"></div>
+
+        <!-- =================================================
+             CONTENT
+             ================================================= -->
+
+        <section class="content">
+          <!-- =================================================
+                 PAGE HEADER
+                 ================================================= -->
+
+          <div class="page-header">
+            <div>
+              <h1>Categories</h1>
+
+              <p>Kelola kategori pemasukan dan pengeluaran FinTrack.</p>
+            </div>
+
+            <div class="category-actions">
+              <a th:href="@{/admin/categories/new}" class="btn btn-primary">
+                <span>+</span>
+
+                Tambah Category
+              </a>
+            </div>
+          </div>
+
+          <!-- =================================================
+                 FLASH MESSAGE
+                 ================================================= -->
+
+          <div th:if="${success}" class="alert alert-success">
+            ✓
+
+            <span th:text="${success}"> Category berhasil disimpan. </span>
+          </div>
+
+          <div th:if="${error}" class="alert alert-error">
+            !
+
+            <span th:text="${error}"> Terjadi kesalahan. </span>
+          </div>
+
+          <!-- =================================================
+                 FILTER
+                 ================================================= -->
+
+          <div class="category-toolbar">
+            <!-- SEARCH -->
+
+            <div class="category-search">
+              <span class="category-search-icon"> 🔍 </span>
+
+              <input
+                type="text"
+                id="categorySearch"
+                placeholder="Cari category..."
+                autocomplete="off"
+              />
+            </div>
+
+            <!-- COUNT -->
+
+            <span
+              class="category-count"
+              th:text="${#lists.size(categories) + ' category'}"
+            >
+              0 category
+            </span>
+          </div>
+
+          <!-- =================================================
+                 TABLE
+                 ================================================= -->
+
+          <div class="card table-card">
+            <div class="table-wrapper">
+              <table class="data-table" id="categoryTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+
+                    <th>Nama</th>
+
+                    <th>Type</th>
+
+                    <th>Description</th>
+
+                    <th>Status</th>
+
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <!-- =================================================
+                             CATEGORY ROW
+                             ================================================= -->
+
+                  <tr
+                    th:each="category, stat : ${categories}"
+                    class="category-row"
+                  >
+                    <!-- NUMBER -->
+
+                    <td>
+                      <span class="text-muted" th:text="${stat.count}">
+                        1
+                      </span>
+                    </td>
+
+                    <!-- NAME -->
+
+                    <td>
+                      <span class="category-name" th:text="${category.name}">
+                        Gaji
+                      </span>
+                    </td>
+
+                    <!-- TYPE -->
+
+                    <td>
+                      <!-- INCOME -->
+
+                      <span
+                        th:if="${category.type != null and category.type.name() == 'INCOME'}"
+                        class="category-type-income"
+                      >
+                        ↑ Income
+                      </span>
+
+                      <!-- EXPENSE -->
+
+                      <span
+                        th:if="${category.type != null and category.type.name() == 'EXPENSE'}"
+                        class="category-type-expense"
+                      >
+                        ↓ Expense
+                      </span>
+
+                      <!-- NULL -->
+
+                      <span th:if="${category.type == null}" class="text-muted">
+                        -
+                      </span>
+                    </td>
+
+                    <!-- DESCRIPTION -->
+
+                    <td>
+                      <span
+                        th:if="${category.description != null and !#strings.isEmpty(category.description)}"
+                        class="category-description"
+                        th:title="${category.description}"
+                        th:text="${category.description}"
+                      >
+                        Pendapatan bulanan
+                      </span>
+
+                      <span
+                        th:unless="${category.description != null and !#strings.isEmpty(category.description)}"
+                        class="text-muted"
+                      >
+                        -
+                      </span>
+                    </td>
+
+                    <!-- STATUS -->
+
+                    <td>
+                      <span
+                        th:if="${category.status == 'ACTIVE'}"
+                        class="category-status-active"
+                      >
+                        Active
+                      </span>
+
+                      <span
+                        th:unless="${category.status == 'ACTIVE'}"
+                        class="category-status-inactive"
+                      >
+                        Inactive
+                      </span>
+                    </td>
+
+                    <!-- ACTION -->
+
+                    <td>
+                      <div class="action-group">
+                        <!-- EDIT -->
+
+                        <a
+                          class="category-action edit"
+                          title="Edit category"
+                          th:href="@{/admin/categories/edit/{id}(id=${category.id})}"
+                        >
+                          ✏️
+                        </a>
+
+                        <!-- DELETE -->
+
+                        <form
+                          method="post"
+                          th:action="@{/admin/categories/delete/{id}(id=${category.id})}"
+                          onsubmit="
+                            return confirm(
+                              'Yakin ingin menonaktifkan category ini?',
+                            );
+                          "
+                        >
+                          <input
+                            type="hidden"
+                            th:name="${_csrf.parameterName}"
+                            th:value="${_csrf.token}"
+                          />
+
+                          <button
+                            type="submit"
+                            class="category-action delete"
+                            title="Nonaktifkan category"
+                          >
+                            🗑️
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- =================================================
+                             EMPTY STATE
+                             ================================================= -->
+
+                  <tr th:if="${#lists.isEmpty(categories)}">
+                    <td colspan="6">
+                      <div class="category-empty">
+                        <div class="category-empty-icon">🗂️</div>
+
+                        <div class="category-empty-title">
+                          Belum ada category
+                        </div>
+
+                        <div class="category-empty-text">
+                          Mulai dengan menambahkan category pertama Anda.
+                        </div>
+
+                        <a
+                          th:href="@{/admin/categories/new}"
+                          class="btn btn-primary"
+                        >
+                          + Tambah Category
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <div th:replace="~{fragments/layout :: mobileMenu}"></div>
+
+      <div th:replace="~{fragments/layout :: scripts}"></div>
+    </div>
+
+    <!-- =========================================================
+     SEARCH
+     ========================================================= -->
+
+    <script>
+      const searchInput = document.getElementById("categorySearch");
+
+      const table = document.getElementById("categoryTable");
+
+      if (searchInput && table) {
+        searchInput.addEventListener("input", function () {
+          const keyword = this.value.toLowerCase().trim();
+
+          const rows = table.querySelectorAll("tbody tr.category-row");
+
+          rows.forEach(function (row) {
+            const text = row.textContent.toLowerCase();
+
+            row.style.display = text.includes(keyword) ? "" : "none";
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

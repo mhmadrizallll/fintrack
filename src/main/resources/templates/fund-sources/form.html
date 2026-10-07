@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>FinTrack - Fund Source Form</title>
+
+    <link rel="stylesheet" th:href="@{/css/fintrack.css}" />
+
+    <style>
+      /* =================================================
+       FUND SOURCE FORM
+       ================================================= */
+
+      .fund-source-form-card {
+        max-width: 760px;
+      }
+
+      .fund-source-form-header {
+        margin-bottom: 22px;
+      }
+
+      .fund-source-form-header h2 {
+        margin: 0;
+
+        font-size: 17px;
+
+        color: #111827;
+      }
+
+      .fund-source-form-header p {
+        margin: 5px 0 0;
+
+        font-size: 12px;
+
+        color: #6b7280;
+      }
+
+      .fund-source-type-options {
+        display: flex;
+
+        gap: 10px;
+
+        flex-wrap: wrap;
+      }
+
+      .fund-source-type-option {
+        position: relative;
+      }
+
+      .fund-source-type-option input {
+        position: absolute;
+
+        opacity: 0;
+
+        pointer-events: none;
+      }
+
+      .fund-source-type-option label {
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        min-width: 100px;
+
+        padding: 10px 16px;
+
+        border: 1px solid #d1d5db;
+
+        border-radius: 8px;
+
+        background: #ffffff;
+
+        color: #374151;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        cursor: pointer;
+
+        transition: all 0.2s ease;
+      }
+
+      .fund-source-type-option label:hover {
+        border-color: #2563eb;
+
+        background: #eff6ff;
+      }
+
+      .fund-source-type-option input:checked + label {
+        border-color: #2563eb;
+
+        background: #eff6ff;
+
+        color: #2563eb;
+      }
+
+      .fund-source-form-actions {
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+        margin-top: 24px;
+
+        padding-top: 20px;
+
+        border-top: 1px solid #e5e7eb;
+      }
+
+      .back-link {
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 6px;
+
+        margin-bottom: 18px;
+
+        color: #6b7280;
+
+        font-size: 13px;
+
+        font-weight: 500;
+      }
+
+      .back-link:hover {
+        color: #2563eb;
+      }
+
+      @media (max-width: 768px) {
+        .fund-source-type-options {
+          flex-direction: column;
+        }
+
+        .fund-source-type-option label {
+          width: 100%;
+
+          box-sizing: border-box;
+        }
+
+        .fund-source-form-actions {
+          flex-direction: column;
+
+          align-items: stretch;
+        }
+
+        .fund-source-form-actions .btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- =====================================================
+       APP
+       ===================================================== -->
+
+    <div class="app">
+      <!-- SIDEBAR -->
+
+      <div th:replace="~{fragments/layout :: sidebar}"></div>
+
+      <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+      <main class="main">
+        <!-- TOPBAR -->
+
+        <div th:replace="~{fragments/layout :: topbar}"></div>
+
+        <!-- CONTENT -->
+
+        <section class="content">
+          <!-- PAGE HEADER -->
+
+          <div class="page-header">
+            <div>
+              <h1
+                th:text="${fundSource.id == null
+                ? 'Tambah Fund Source'
+                : 'Edit Fund Source'}"
+              >
+                Tambah Fund Source
+              </h1>
+
+              <p>Kelola informasi sumber dana FinTrack.</p>
+            </div>
+          </div>
+
+          <!-- BACK -->
+
+          <a th:href="@{/admin/fund-sources}" class="back-link">
+            ← Kembali ke Fund Sources
+          </a>
+
+          <!-- FORM CARD -->
+
+          <div class="card form-card fund-source-form-card">
+            <div class="fund-source-form-header">
+              <h2>Informasi Fund Source</h2>
+
+              <p>Isi data sumber dana yang akan digunakan pada transaksi.</p>
+            </div>
+
+            <!-- FORM -->
+
+            <form
+              th:action="@{/admin/fund-sources/save}"
+              th:object="${fundSource}"
+              method="post"
+            >
+              <!-- CSRF -->
+
+              <input
+                type="hidden"
+                th:name="${_csrf.parameterName}"
+                th:value="${_csrf.token}"
+              />
+
+              <!-- ID -->
+
+              <input type="hidden" th:field="*{id}" />
+
+              <!-- NAME -->
+
+              <div class="form-group">
+                <label for="name" class="form-label"> Nama Fund Source </label>
+
+                <input
+                  type="text"
+                  id="name"
+                  th:field="*{name}"
+                  class="form-control"
+                  placeholder="Contoh: Bank BCA"
+                  required
+                  maxlength="100"
+                />
+              </div>
+
+              <!-- TYPE -->
+
+              <div class="form-group">
+                <label class="form-label"> Type </label>
+
+                <div class="fund-source-type-options">
+                  <!-- CASH -->
+
+                  <div class="fund-source-type-option">
+                    <input
+                      type="radio"
+                      id="typeCash"
+                      th:field="*{type}"
+                      value="CASH"
+                    />
+
+                    <label for="typeCash"> Cash </label>
+                  </div>
+
+                  <!-- BANK -->
+
+                  <div class="fund-source-type-option">
+                    <input
+                      type="radio"
+                      id="typeBank"
+                      th:field="*{type}"
+                      value="BANK"
+                    />
+
+                    <label for="typeBank"> Bank </label>
+                  </div>
+
+                  <!-- E-WALLET -->
+
+                  <div class="fund-source-type-option">
+                    <input
+                      type="radio"
+                      id="typeEwallet"
+                      th:field="*{type}"
+                      value="EWALLET"
+                    />
+
+                    <label for="typeEwallet"> E-Wallet </label>
+                  </div>
+
+                  <!-- OTHER -->
+
+                  <div class="fund-source-type-option">
+                    <input
+                      type="radio"
+                      id="typeOther"
+                      th:field="*{type}"
+                      value="OTHER"
+                    />
+
+                    <label for="typeOther"> Other </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- DESCRIPTION -->
+
+              <div class="form-group">
+                <label for="description" class="form-label">
+                  Description
+                </label>
+
+                <textarea
+                  id="description"
+                  th:field="*{description}"
+                  class="form-control"
+                  placeholder="Contoh: Rekening utama untuk menerima gaji"
+                  maxlength="255"
+                ></textarea>
+              </div>
+
+              <!-- STATUS -->
+
+              <div class="form-group" th:if="${fundSource.id != null}">
+                <label for="status" class="form-label"> Status </label>
+
+                <select id="status" th:field="*{status}" class="form-select">
+                  <option value="ACTIVE">ACTIVE</option>
+
+                  <option value="INACTIVE">INACTIVE</option>
+                </select>
+              </div>
+
+              <!-- ACTIONS -->
+
+              <div class="fund-source-form-actions">
+                <a th:href="@{/admin/fund-sources}" class="btn btn-light">
+                  Batal
+                </a>
+
+                <button type="submit" class="btn btn-primary">
+                  <span> 💾 </span>
+
+                  Simpan Fund Source
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </main>
+
+      <div th:replace="~{fragments/layout :: mobileMenu}"></div>
+
+      <div th:replace="~{fragments/layout :: scripts}"></div>
+    </div>
+  </body>
+</html>

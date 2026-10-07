@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Login | FinTrack</title>
+
+    <link rel="stylesheet" th:href="@{/css/fintrack.css}" />
+
+    <style>
+      /* ========================================
+         LOGIN PAGE
+      ======================================== */
+
+      body.login-page {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(
+            circle at 15% 20%,
+            rgba(37, 99, 235, 0.08),
+            transparent 30%
+          ),
+          radial-gradient(
+            circle at 85% 80%,
+            rgba(14, 165, 233, 0.08),
+            transparent 30%
+          ),
+          #f8fafc;
+      }
+
+      .login-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      .login-card {
+        width: 100%;
+        max-width: 420px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow:
+          0 20px 50px rgba(15, 23, 42, 0.08),
+          0 4px 12px rgba(15, 23, 42, 0.04);
+      }
+
+      .login-brand {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+
+      .login-logo {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 18px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 28px;
+        font-weight: 800;
+        box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
+      }
+
+      .login-brand h1 {
+        margin: 0;
+        font-size: 26px;
+        font-weight: 750;
+        color: #0f172a;
+        letter-spacing: -0.5px;
+      }
+
+      .login-brand p {
+        margin: 8px 0 0;
+        color: #64748b;
+        font-size: 14px;
+      }
+
+      .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .login-field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .login-field label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #334155;
+      }
+
+      .login-input {
+        width: 100%;
+        height: 46px;
+        box-sizing: border-box;
+        padding: 0 14px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        background: #ffffff;
+        color: #0f172a;
+        font-size: 14px;
+        outline: none;
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .login-input::placeholder {
+        color: #94a3b8;
+      }
+
+      .login-input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+
+      .login-button {
+        width: 100%;
+        height: 48px;
+        margin-top: 4px;
+        border: 0;
+        border-radius: 10px;
+        background: #2563eb;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition:
+          background 0.2s ease,
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .login-button:hover {
+        background: #1d4ed8;
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);
+        transform: translateY(-1px);
+      }
+
+      .login-button:active {
+        transform: translateY(0);
+      }
+
+      .login-alert {
+        margin-bottom: 20px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .login-alert.error {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #b91c1c;
+      }
+
+      .login-alert.logout {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: #15803d;
+      }
+
+      .login-footer {
+        margin-top: 28px;
+        text-align: center;
+        color: #94a3b8;
+        font-size: 12px;
+      }
+
+      /* ========================================
+         MOBILE
+      ======================================== */
+
+      @media (max-width: 480px) {
+        .login-container {
+          padding: 16px;
+        }
+
+        .login-card {
+          padding: 30px 22px;
+          border-radius: 16px;
+        }
+
+        .login-brand {
+          margin-bottom: 26px;
+        }
+
+        .login-logo {
+          width: 56px;
+          height: 56px;
+          border-radius: 16px;
+          font-size: 24px;
+        }
+
+        .login-brand h1 {
+          font-size: 23px;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="login-page">
+    <main class="login-container">
+      <section class="login-card">
+        <!-- BRAND -->
+        <div class="login-brand">
+          <div class="login-logo">F</div>
+
+          <h1>FinTrack</h1>
+
+          <p>Personal & Business Financial Report System</p>
+        </div>
+
+        <!-- ERROR -->
+        <div th:if="${param.error}" class="login-alert error">
+          Username atau password yang Anda masukkan salah.
+        </div>
+
+        <!-- LOGOUT -->
+        <div th:if="${param.logout}" class="login-alert logout">
+          Anda telah berhasil logout.
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form class="login-form" th:action="@{/login}" method="post">
+          <!-- USERNAME -->
+          <div class="login-field">
+            <label for="username"> Username </label>
+
+            <input
+              id="username"
+              name="username"
+              type="text"
+              class="login-input"
+              placeholder="Masukkan username"
+              autocomplete="username"
+              required
+              autofocus
+            />
+          </div>
+
+          <!-- PASSWORD -->
+          <div class="login-field">
+            <label for="password"> Password </label>
+
+            <input
+              id="password"
+              name="password"
+              type="password"
+              class="login-input"
+              placeholder="Masukkan password"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+
+          <!-- CSRF -->
+          <input
+            type="hidden"
+            th:name="${_csrf.parameterName}"
+            th:value="${_csrf.token}"
+          />
+
+          <!-- BUTTON -->
+          <button type="submit" class="login-button">Login</button>
+        </form>
+
+        <div class="login-footer">FinTrack © 2026</div>
+      </section>
+    </main>
+  </body>
+</html>

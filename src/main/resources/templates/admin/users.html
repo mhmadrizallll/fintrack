@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>FinTrack - User Management</title>
+
+    <link rel="stylesheet" th:href="@{/css/fintrack.css}" />
+
+    <style>
+      /* =================================================
+           USER MANAGEMENT PAGE
+           ================================================= */
+
+      .user-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .user-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .user-search {
+        position: relative;
+        flex: 1;
+        max-width: 320px;
+      }
+
+      .user-search input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 12px 10px 38px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        outline: none;
+        font-family: inherit;
+        font-size: 13px;
+      }
+
+      .user-search input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+
+      .user-search-icon {
+        position: absolute;
+        left: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        font-size: 14px;
+        pointer-events: none;
+      }
+
+      .user-count {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #f3f4f6;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .user-name {
+        font-weight: 700;
+        color: #111827;
+      }
+
+      .user-username {
+        color: #6b7280;
+        font-size: 12px;
+        margin-top: 3px;
+      }
+
+      .user-email {
+        color: #4b5563;
+        font-size: 13px;
+      }
+
+      .user-role-admin {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #ede9fe;
+        color: #7c3aed;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .user-role-user {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .user-status-active {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #dcfce7;
+        color: #15803d;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .user-status-inactive {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #f3f4f6;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .user-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 7px;
+        font-size: 14px;
+        text-decoration: none;
+        cursor: pointer;
+        transition:
+          background 0.2s ease,
+          color 0.2s ease;
+      }
+
+      .user-action.edit {
+        background: #eff6ff;
+        color: #2563eb;
+      }
+
+      .user-action.edit:hover {
+        background: #dbeafe;
+      }
+
+      .user-action.toggle {
+        background: #fef2f2;
+        color: #dc2626;
+      }
+
+      .user-action.toggle:hover {
+        background: #fee2e2;
+      }
+
+      .user-action.activate {
+        background: #ecfdf5;
+        color: #059669;
+      }
+
+      .user-action.activate:hover {
+        background: #d1fae5;
+      }
+
+      .user-empty {
+        text-align: center;
+        padding: 50px 20px;
+      }
+
+      .user-empty-icon {
+        font-size: 42px;
+        margin-bottom: 15px;
+      }
+
+      .user-empty-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 8px;
+      }
+
+      .user-empty-text {
+        font-size: 13px;
+        color: #6b7280;
+        margin-bottom: 20px;
+      }
+
+      @media (max-width: 768px) {
+        .user-toolbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .user-actions {
+          width: 100%;
+        }
+
+        .user-actions .btn {
+          flex: 1;
+        }
+
+        .user-search {
+          max-width: none;
+          width: 100%;
+        }
+      }
+
+      .user-filter-form {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      .user-search {
+        position: relative;
+        flex: 1;
+        min-width: 220px;
+      }
+
+      .user-search-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+      }
+
+      .user-search input {
+        width: 100%;
+        padding-left: 42px;
+      }
+
+      .user-filter select {
+        min-width: 150px;
+      }
+
+      .user-filter-form .btn {
+        height: 42px;
+      }
+
+      @media (max-width: 768px) {
+        .user-filter-form {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .user-search {
+          width: 100%;
+          min-width: 0;
+        }
+
+        .user-filter {
+          width: 100%;
+        }
+
+        .user-filter select {
+          width: 100%;
+        }
+
+        .user-filter-form .btn {
+          width: 100%;
+        }
+      }
+
+      .user-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 22px;
+        padding: 4px 0;
+      }
+
+      .user-search-box {
+        position: relative;
+        flex: 1;
+        min-width: 280px;
+      }
+
+      .user-search-box input {
+        width: 100%;
+        height: 44px;
+        padding: 0 16px 0 42px;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background: #ffffff;
+        color: #0f172a;
+        font-size: 14px;
+        outline: none;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+      }
+
+      .user-search-box input::placeholder {
+        color: #94a3b8;
+      }
+
+      .user-search-box input:focus {
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+      }
+
+      .user-search-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 21px;
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      .user-filter-box select {
+        height: 44px;
+        min-width: 145px;
+        padding: 0 34px 0 14px;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background: #ffffff;
+        color: #334155;
+        font-size: 14px;
+        outline: none;
+        cursor: pointer;
+      }
+
+      .user-filter-box select:focus {
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+      }
+
+      .user-reset-btn {
+        height: 44px;
+        padding: 0 15px;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background: #ffffff;
+        color: #64748b;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .user-reset-btn:hover {
+        background: #f8fafc;
+        color: #334155;
+        border-color: #cbd5e1;
+      }
+
+      .user-row.hidden {
+        display: none;
+      }
+
+      .user-empty-filter {
+        display: none;
+        text-align: center;
+        padding: 45px 20px;
+        color: #64748b;
+      }
+
+      .user-empty-filter.show {
+        display: table-row;
+      }
+
+      .user-result-count {
+        font-size: 13px;
+        color: #94a3b8;
+        margin-left: auto;
+        white-space: nowrap;
+      }
+
+      @media (max-width: 768px) {
+        .user-toolbar {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+        }
+
+        .user-search-box {
+          grid-column: 1 / -1;
+          min-width: 0;
+        }
+
+        .user-filter-box select {
+          width: 100%;
+        }
+
+        .user-reset-btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <!-- =====================================================
+             SIDEBAR
+             ===================================================== -->
+
+      <div th:replace="~{fragments/layout :: sidebar}"></div>
+
+      <!-- =====================================================
+             MAIN
+             ===================================================== -->
+
+      <main class="main">
+        <!-- TOPBAR -->
+
+        <div th:replace="~{fragments/layout :: topbar}"></div>
+
+        <!-- =================================================
+                 CONTENT
+                 ================================================= -->
+
+        <section class="content">
+          <!-- =================================================
+                     PAGE HEADER
+                     ================================================= -->
+
+          <div class="page-header">
+            <div>
+              <h1>User Management</h1>
+
+              <p>Kelola pengguna yang dapat mengakses sistem FinTrack.</p>
+            </div>
+
+            <div class="user-actions">
+              <a th:href="@{/admin/users/new}" class="btn btn-primary">
+                <span>+</span>
+                Tambah User
+              </a>
+            </div>
+          </div>
+
+          <!-- =================================================
+                     FLASH MESSAGE
+                     ================================================= -->
+
+          <div th:if="${param.success}" class="alert alert-success">
+            ✓
+
+            <span th:if="${param.success[0] == 'created'}">
+              User berhasil ditambahkan.
+            </span>
+
+            <span th:if="${param.success[0] == 'updated'}">
+              User berhasil diperbarui.
+            </span>
+
+            <span th:if="${param.success[0] == 'status'}">
+              Status user berhasil diperbarui.
+            </span>
+          </div>
+
+          <div th:if="${error}" class="alert alert-error">
+            !
+
+            <span th:text="${error}"> Terjadi kesalahan. </span>
+          </div>
+
+          <div th:if="${param.error}" class="alert alert-error">
+            <span>⚠️</span>
+
+            <span th:text="${param.error[0]}"> Terjadi kesalahan. </span>
+          </div>
+
+          <!-- =================================================
+                     FILTER
+                     ================================================= -->
+
+          <div class="user-toolbar">
+            <div class="user-search-box">
+              <span class="user-search-icon">⌕</span>
+
+              <input
+                type="text"
+                id="userSearch"
+                placeholder="Cari username, nama, atau email..."
+                autocomplete="off"
+              />
+            </div>
+
+            <div class="user-filter-box">
+              <select id="roleFilter">
+                <option value="ALL">Semua Role</option>
+                <option value="ADMIN">Admin</option>
+                <option value="USER">User</option>
+              </select>
+            </div>
+
+            <div class="user-filter-box">
+              <select id="statusFilter">
+                <option value="ALL">Semua Status</option>
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
+              </select>
+            </div>
+
+            <button type="button" id="resetUserFilter" class="user-reset-btn">
+              Reset
+            </button>
+          </div>
+
+          <!-- =================================================
+                     TABLE
+                     ================================================= -->
+
+          <div class="card table-card">
+            <div class="table-wrapper">
+              <table class="data-table" id="userTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+
+                    <th>User</th>
+
+                    <th>Email</th>
+
+                    <th>Role</th>
+
+                    <th>Status</th>
+
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <!-- =================================================
+                                     USER ROW
+                                     ================================================= -->
+
+                  <tr
+                    th:each="user, stat : ${users}"
+                    class="user-row"
+                    th:attr="
+        data-username=${user.username},
+        data-name=${user.fullName},
+        data-email=${user.email},
+        data-role=${user.role},
+        data-status=${user.status}
+    "
+                  >
+                    <!-- NUMBER -->
+
+                    <td>
+                      <span class="text-muted" th:text="${stat.count}">
+                        1
+                      </span>
+                    </td>
+
+                    <!-- USER -->
+
+                    <td>
+                      <div
+                        class="user-name"
+                        th:text="${user.fullName != null and !#strings.isEmpty(user.fullName)
+                                                ? user.fullName
+                                                : user.username}"
+                      >
+                        Administrator
+                      </div>
+
+                      <div
+                        class="user-username"
+                        th:text="'@' + ${user.username}"
+                      >
+                        @admin
+                      </div>
+                    </td>
+
+                    <!-- EMAIL -->
+
+                    <td>
+                      <span
+                        th:if="${user.email != null and !#strings.isEmpty(user.email)}"
+                        class="user-email"
+                        th:text="${user.email}"
+                      >
+                        admin@fintrack.local
+                      </span>
+
+                      <span
+                        th:unless="${user.email != null and !#strings.isEmpty(user.email)}"
+                        class="text-muted"
+                      >
+                        -
+                      </span>
+                    </td>
+
+                    <!-- ROLE -->
+
+                    <td>
+                      <span
+                        th:if="${user.role == 'ADMIN'}"
+                        class="user-role-admin"
+                      >
+                        ADMIN
+                      </span>
+
+                      <span
+                        th:unless="${user.role == 'ADMIN'}"
+                        class="user-role-user"
+                      >
+                        USER
+                      </span>
+                    </td>
+
+                    <!-- STATUS -->
+
+                    <td>
+                      <span
+                        th:if="${user.status == 'ACTIVE'}"
+                        class="user-status-active"
+                      >
+                        Active
+                      </span>
+
+                      <span
+                        th:unless="${user.status == 'ACTIVE'}"
+                        class="user-status-inactive"
+                      >
+                        Inactive
+                      </span>
+                    </td>
+
+                    <!-- ACTION -->
+
+                    <td>
+                      <div class="action-group">
+                        <!-- EDIT -->
+
+                        <a
+                          class="user-action edit"
+                          title="Edit user"
+                          th:href="@{/admin/users/edit/{id}(id=${user.id})}"
+                        >
+                          ✏️
+                        </a>
+
+                        <!-- TOGGLE STATUS -->
+
+                        <form
+                          method="post"
+                          th:action="@{/admin/users/toggle/{id}(id=${user.id})}"
+                          onsubmit="
+                            return confirm(
+                              'Yakin ingin mengubah status user ini?',
+                            );
+                          "
+                        >
+                          <input
+                            type="hidden"
+                            th:name="${_csrf.parameterName}"
+                            th:value="${_csrf.token}"
+                          />
+
+                          <button
+                            th:if="${user.status == 'ACTIVE'}"
+                            type="submit"
+                            class="user-action toggle"
+                            title="Nonaktifkan user"
+                          >
+                            🔒
+                          </button>
+
+                          <button
+                            th:unless="${user.status == 'ACTIVE'}"
+                            type="submit"
+                            class="user-action activate"
+                            title="Aktifkan user"
+                          >
+                            🔓
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- =================================================
+                                     EMPTY STATE
+                                     ================================================= -->
+
+                  <tr th:if="${#lists.isEmpty(users)}">
+                    <td colspan="6">
+                      <div class="user-empty">
+                        <div class="user-empty-icon">👤</div>
+
+                        <div class="user-empty-title">Belum ada user</div>
+
+                        <div class="user-empty-text">
+                          Mulai dengan menambahkan user pertama Anda.
+                        </div>
+
+                        <a
+                          th:href="@{/admin/users/new}"
+                          class="btn btn-primary"
+                        >
+                          + Tambah User
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- MOBILE MENU -->
+
+      <div th:replace="~{fragments/layout :: mobileMenu}"></div>
+
+      <!-- SCRIPTS -->
+
+      <div th:replace="~{fragments/layout :: scripts}"></div>
+    </div>
+
+    <!-- =========================================================
+         SEARCH
+         ========================================================= -->
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("userSearch");
+        const roleFilter = document.getElementById("roleFilter");
+        const statusFilter = document.getElementById("statusFilter");
+        const resetButton = document.getElementById("resetUserFilter");
+
+        const rows = document.querySelectorAll(".user-row");
+        const resultCount = document.getElementById("userResultCount");
+
+        function filterUsers() {
+          const keyword = searchInput.value.trim().toLowerCase();
+
+          const role = roleFilter.value;
+
+          const status = statusFilter.value;
+
+          let visibleCount = 0;
+
+          rows.forEach(function (row) {
+            const username = (row.dataset.username || "").toLowerCase();
+
+            const name = (row.dataset.name || "").toLowerCase();
+
+            const email = (row.dataset.email || "").toLowerCase();
+
+            const userRole = (row.dataset.role || "").toUpperCase();
+
+            const userStatus = (row.dataset.status || "").toUpperCase();
+
+            const matchesKeyword =
+              !keyword ||
+              username.includes(keyword) ||
+              name.includes(keyword) ||
+              email.includes(keyword);
+
+            const matchesRole = role === "ALL" || userRole === role;
+
+            const matchesStatus = status === "ALL" || userStatus === status;
+
+            const visible = matchesKeyword && matchesRole && matchesStatus;
+
+            row.classList.toggle("hidden", !visible);
+
+            if (visible) {
+              visibleCount++;
+            }
+          });
+
+          if (resultCount) {
+            resultCount.textContent = visibleCount + " user";
+          }
+        }
+
+        // Search langsung saat mengetik
+        searchInput.addEventListener("input", filterUsers);
+
+        // Filter langsung saat dropdown berubah
+        roleFilter.addEventListener("change", filterUsers);
+
+        statusFilter.addEventListener("change", filterUsers);
+
+        // Reset
+        resetButton.addEventListener("click", function () {
+          searchInput.value = "";
+          roleFilter.value = "ALL";
+          statusFilter.value = "ALL";
+
+          filterUsers();
+
+          searchInput.focus();
+        });
+
+        filterUsers();
+      });
+    </script>
+  </body>
+</html>
