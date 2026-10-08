@@ -1,5 +1,23 @@
 <!doctype html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
+  <style>
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      flex-shrink: 0;
+    }
+
+    .logo svg {
+      width: 25px;
+      height: 25px;
+    }
+  </style>
   <body>
     <!-- =====================================================
          SIDEBAR
@@ -16,8 +34,42 @@
         ×
       </button>
 
+      <!-- BRAND -->
       <div class="sidebar-brand">
-        <div class="logo">F</div>
+        <div class="logo">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <rect
+              x="3"
+              y="5"
+              width="18"
+              height="14"
+              rx="3"
+              stroke="currentColor"
+              stroke-width="2"
+            />
+
+            <path
+              d="M7 15L10 12L13 14L17 9"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+
+            <path
+              d="M16 9H18V11"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
 
         <div>
           <div class="brand-name">FinTrack</div>
@@ -25,12 +77,19 @@
         </div>
       </div>
 
+      <!-- =====================================================
+           NAVIGATION
+           ===================================================== -->
+
       <nav class="sidebar-nav">
-        <!-- MAIN -->
+        <!-- ===================================================
+             MAIN
+             =================================================== -->
 
         <div class="nav-section">
           <div class="nav-section-title">Main</div>
 
+          <!-- DASHBOARD -->
           <a
             th:href="@{/dashboard}"
             class="nav-item"
@@ -42,10 +101,14 @@
           </a>
         </div>
 
-        <!-- FINANCE -->
+        <!-- ===================================================
+             FINANCE
+             =================================================== -->
+
         <div class="nav-section">
           <div class="nav-section-title">Finance</div>
 
+          <!-- TRANSACTIONS -->
           <a
             th:href="@{/transactions}"
             class="nav-item"
@@ -56,7 +119,10 @@
             <span>Transactions</span>
           </a>
 
+          <!-- CATEGORIES
+               ADMIN ONLY -->
           <a
+            th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
             th:href="@{/admin/categories}"
             class="nav-item"
             th:classappend="${activeMenu == 'categories'} ? ' active' : ''"
@@ -66,7 +132,10 @@
             <span>Categories</span>
           </a>
 
+          <!-- FUND SOURCES
+               ADMIN ONLY -->
           <a
+            th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
             th:href="@{/admin/fund-sources}"
             class="nav-item"
             th:classappend="${activeMenu == 'fund-sources'} ? ' active' : ''"
@@ -77,11 +146,14 @@
           </a>
         </div>
 
-        <!-- REPORTS -->
+        <!-- ===================================================
+             REPORTS
+             =================================================== -->
 
         <div class="nav-section">
           <div class="nav-section-title">Reports</div>
 
+          <!-- DAILY REPORT -->
           <a
             th:href="@{/reports/daily}"
             class="nav-item"
@@ -92,6 +164,7 @@
             <span>Daily Report</span>
           </a>
 
+          <!-- MONTHLY REPORT -->
           <a
             th:href="@{/reports/monthly}"
             class="nav-item"
@@ -103,17 +176,23 @@
           </a>
         </div>
 
-        <!-- Users -->
+        <!-- ===================================================
+             USERS
+             ADMIN ONLY
+             =================================================== -->
+
         <div
           class="nav-section"
           th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
         >
           <div class="nav-section-title">Users</div>
 
+          <!-- USER MANAGEMENT -->
           <a
             th:href="@{/admin/users}"
             class="nav-item"
-            th:classappend="${activeMenu == 'users'} ? ' active'"
+            th:classappend="${activeMenu == 'users'} ? ' active' : ''"
+            onclick="closeSidebarOnMobile()"
           >
             <span class="nav-icon">👤</span>
             <span>User Management</span>
@@ -121,7 +200,9 @@
         </div>
       </nav>
 
-      <!-- USER -->
+      <!-- =====================================================
+           USER FOOTER
+           ===================================================== -->
 
       <div class="sidebar-footer">
         <div class="user-mini">
@@ -143,10 +224,19 @@
           <div class="user-info">
             <div class="user-name" th:text="${#authentication.name}">admin</div>
 
-            <div class="user-role">Administrator</div>
+            <!-- ROLE OTOMATIS -->
+            <div
+              class="user-role"
+              th:text="${#authorization.expression('hasRole(''ADMIN'')')
+                        ? 'Administrator'
+                        : 'User'}"
+            >
+              User
+            </div>
           </div>
         </div>
 
+        <!-- LOGOUT -->
         <form method="post" th:action="@{/logout}">
           <input
             type="hidden"
@@ -179,7 +269,6 @@
 
     <header class="topbar" th:fragment="topbar">
       <!-- MOBILE HAMBURGER -->
-
       <button
         type="button"
         class="mobile-menu"
@@ -209,10 +298,15 @@
          ===================================================== -->
 
     <script th:fragment="scripts">
+      // =====================================================
+      // SIDEBAR TOGGLE
+      // =====================================================
+
       function toggleSidebar() {
         console.log("HAMBURGER DIKLIK");
 
         const sidebar = document.getElementById("fintrackSidebar");
+
         const overlay = document.getElementById("sidebarOverlay");
 
         console.log("sidebar:", sidebar);
@@ -220,6 +314,7 @@
 
         if (!sidebar) {
           console.error("Sidebar tidak ditemukan!");
+
           return;
         }
 
@@ -237,9 +332,14 @@
         console.log("Sidebar class:", sidebar.className);
       }
 
+      // =====================================================
+      // CLOSE SIDEBAR MOBILE
+      // =====================================================
+
       function closeSidebarOnMobile() {
         if (window.innerWidth <= 768) {
           const sidebar = document.getElementById("fintrackSidebar");
+
           const overlay = document.getElementById("sidebarOverlay");
 
           if (sidebar) {
@@ -253,6 +353,10 @@
           document.body.classList.remove("sidebar-open");
         }
       }
+
+      // =====================================================
+      // CURRENT DATE
+      // =====================================================
 
       function updateDate() {
         const element = document.getElementById("currentDate");
@@ -271,6 +375,7 @@
         });
       }
 
+      // Jalankan saat halaman dibuka
       updateDate();
     </script>
   </body>

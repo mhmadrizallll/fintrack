@@ -288,6 +288,115 @@
           max-width: none;
         }
       }
+
+      /* =====================================================
+   PAGINATION
+   ===================================================== */
+
+      .pagination-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        margin-top: 18px;
+        padding: 4px 2px;
+      }
+
+      .pagination-info {
+        color: #6b7280;
+        font-size: 13px;
+      }
+
+      .pagination-info strong {
+        color: #374151;
+        font-weight: 600;
+      }
+
+      .pagination {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .pagination-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        min-width: 34px;
+        height: 34px;
+
+        padding: 0 10px;
+
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+
+        background: #ffffff;
+        color: #374151;
+
+        text-decoration: none;
+
+        font-size: 13px;
+        font-weight: 600;
+
+        transition:
+          background 0.2s ease,
+          border-color 0.2s ease,
+          color 0.2s ease,
+          transform 0.2s ease;
+      }
+
+      .pagination-btn:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+        color: #111827;
+      }
+
+      .pagination-btn:active {
+        transform: scale(0.96);
+      }
+
+      /* ACTIVE PAGE */
+      .pagination-btn.active {
+        background: #2563eb;
+        border-color: #2563eb;
+        color: #ffffff;
+      }
+
+      .pagination-btn.active:hover {
+        background: #1d4ed8;
+        border-color: #1d4ed8;
+        color: #ffffff;
+      }
+
+      /* DISABLED */
+      .pagination-btn.disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        pointer-events: none;
+
+        background: #f9fafb;
+        color: #9ca3af;
+        border-color: #e5e7eb;
+      }
+
+      /* MOBILE */
+      @media (max-width: 768px) {
+        .pagination-container {
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .pagination-info {
+          text-align: center;
+        }
+
+        .pagination {
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+      }
     </style>
   </head>
 
@@ -363,13 +472,6 @@
                 placeholder="Cari transaksi..."
               />
             </div>
-
-            <span
-              class="transaction-count"
-              th:text="${#lists.size(transactions) + ' transaksi'}"
-            >
-              0 transaksi
-            </span>
           </div>
 
           <!-- =================================================
@@ -665,6 +767,57 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          <!-- =====================================================
+     PAGINATION
+     ===================================================== -->
+
+          <div class="pagination-container" th:if="${totalElements > 0}">
+            <!-- PAGINATION INFO -->
+            <div class="pagination-info">
+              Menampilkan
+              <strong th:text="${firstItem}">1</strong>
+              -
+              <strong th:text="${lastItem}">10</strong>
+              dari
+              <strong th:text="${totalElements}">100</strong>
+              transaksi
+            </div>
+
+            <!-- PAGINATION BUTTON -->
+            <div class="pagination" th:if="${totalPages > 1}">
+              <!-- PREVIOUS -->
+              <a
+                th:href="@{/transactions(page=${currentPage - 1},size=${pageSize})}"
+                class="pagination-btn"
+                th:classappend="${currentPage == 0 ? ' disabled' : ''}"
+                title="Halaman sebelumnya"
+              >
+                ‹
+              </a>
+
+              <!-- PAGE NUMBER -->
+              <a
+                th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                th:href="@{/transactions(page=${i},size=${pageSize})}"
+                th:text="${i + 1}"
+                th:classappend="${i == currentPage ? ' active' : ''}"
+                class="pagination-btn"
+              >
+                1
+              </a>
+
+              <!-- NEXT -->
+              <a
+                th:href="@{/transactions(page=${currentPage + 1},size=${pageSize})}"
+                class="pagination-btn"
+                th:classappend="${currentPage == totalPages - 1 ? ' disabled' : ''}"
+                title="Halaman berikutnya"
+              >
+                ›
+              </a>
             </div>
           </div>
         </section>

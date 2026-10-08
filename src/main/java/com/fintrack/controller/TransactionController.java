@@ -49,52 +49,145 @@ public class TransactionController {
     // LIST
     // =========================================================
 
-    @GetMapping
-    public String index(
-            Model model,
-            Authentication authentication) {
+    // =========================================================
+// LIST
+// =========================================================
 
-        String username = authentication.getName();
+@GetMapping
+public String index(
+        @RequestParam(value = "page", defaultValue = "0") int page,
+        @RequestParam(value = "size", defaultValue = "10") int size,
+        Model model,
+        Authentication authentication) {
 
-        model.addAttribute(
-                "pageTitle",
-                "Transactions"
-        );
+    String username = authentication.getName();
 
-        model.addAttribute(
-                "pageSubtitle",
-                "Kelola pemasukan dan pengeluaran FinTrack"
-        );
-
-        model.addAttribute(
-                "activeMenu",
-                "transactions"
-        );
-
-        /*
-         * ADMIN melihat seluruh transaksi.
-         * USER hanya melihat transaksi miliknya.
-         */
-        if (isAdmin(authentication)) {
-
-            model.addAttribute(
-                    "transactions",
-                    transactionService.getAll()
-            );
-
-        } else {
-
-            model.addAttribute(
-                    "transactions",
-                    transactionService.getAllByUser(
-                            username
-                    )
-            );
-        }
-
-        return "transactions/index";
+    // Validasi pagination
+    if (page < 0) {
+        page = 0;
     }
 
+    if (size <= 0) {
+        size = 10;
+    }
+
+    if (size > 100) {
+        size = 100;
+    }
+
+    org.springframework.data.domain.Page<Transaction> transactionPage;
+
+    // ADMIN melihat semua transaksi
+    if (isAdmin(authentication)) {
+        transactionPage = transactionService.getAllPaginated(page, size);
+    }
+    // USER hanya melihat transaksi miliknya
+    else {
+        transactionPage = transactionService.getAllByUserPaginated(
+                username,
+                page,
+                size
+        );
+    }
+
+    // Jika page yang diminta melebihi halaman terakhir
+    if (transactionPage.getTotalPages() > 0
+            && page >= transactionPage.getTotalPages()) {
+
+        page = transactionPage.getTotalPages() - 1;
+
+        if (isAdmin(authentication)) {
+            transactionPage = transactionService.getAllPaginated(page, size);
+        } else {
+            transactionPage = transactionService.getAllByUserPaginated(
+                    username,
+                    page,
+                    size
+            );
+        }
+    }
+
+    // =========================================================
+    // DATA TRANSAKSI
+    // =========================================================
+
+    model.addAttribute(
+            "transactions",
+            transactionPage.getContent()
+    );
+
+    model.addAttribute(
+            "currentPage",
+            page
+    );
+
+    model.addAttribute(
+            "totalPages",
+            transactionPage.getTotalPages()
+    );
+
+    model.addAttribute(
+            "totalElements",
+            transactionPage.getTotalElements()
+    );
+
+    model.addAttribute(
+            "pageSize",
+            size
+    );
+
+    // =========================================================
+    // PAGINATION INFO
+    // Contoh:
+    // Menampilkan 1 - 10 dari 25 transaksi
+    // =========================================================
+
+    long totalElements = transactionPage.getTotalElements();
+
+    long firstItem;
+
+    if (totalElements == 0) {
+        firstItem = 0;
+    } else {
+        firstItem = ((long) page * size) + 1;
+    }
+
+    long lastItem = Math.min(
+            ((long) page + 1) * size,
+            totalElements
+    );
+
+    model.addAttribute(
+            "firstItem",
+            firstItem
+    );
+
+    model.addAttribute(
+            "lastItem",
+            lastItem
+    );
+
+    // =========================================================
+    // PAGE INFORMATION
+    // =========================================================
+
+    model.addAttribute(
+            "pageTitle",
+            "Transactions"
+    );
+
+    model.addAttribute(
+            "pageSubtitle",
+            "Kelola pemasukan dan pengeluaran FinTrack"
+    );
+
+    model.addAttribute(
+            "activeMenu",
+            "transactions"
+    );
+
+    return "transactions/index";
+}
     // =========================================================
     // FORM TAMBAH
     // =========================================================
@@ -508,57 +601,129 @@ public class TransactionController {
     // =========================================================
 
     @GetMapping("/attachment/{filename}")
-    public ResponseEntity<Resource> viewAttachment(
-            @PathVariable String filename) {
-
-        try {
-
-            Path filePath =
-                    fileStorageService.getFile(filename);
-
-            if (!Files.exists(filePath)) {
-
+        public ResponseEntity<Resource> viewAttachment(
+                @PathVariable String filename,
+                Authentication authentication) {
+        
+            try {
+        
+                String username =
+                        authentication.getName();
+        
+                boolean admin =
+                        isAdmin(authentication);
+        
+                /*
+                 * ADMIN:
+                 * boleh melihat attachment semua transaksi.
+                 */
+                if (admin) {
+        
+                    Path filePath =
+                            fileStorageService.getFile(filename);
+        
+                    if (!Files.exists(filePath)) {
+        
+                        return ResponseEntity
+                                .notFound()
+                                .build();
+                    }
+        
+                    Resource resource =
+                            new UrlResource(
+                                    filePath.toUri()
+                            );
+        
+                    String contentType =
+                            Files.probeContentType(filePath);
+        
+                    if (contentType == null) {
+        
+                        contentType =
+                                MediaType.APPLICATION_OCTET_STREAM_VALUE;
+                    }
+        
+                    return ResponseEntity
+                            .ok()
+                            .contentType(
+                                    MediaType.parseMediaType(
+                                            contentType
+                                    )
+                            )
+                            .header(
+                                    HttpHeaders.CONTENT_DISPOSITION,
+                                    "inline; filename=\"" +
+                                            filePath.getFileName() +
+                                            "\""
+                            )
+                            .body(resource);
+                }
+        
+                /*
+                 * USER:
+                 * pastikan attachment memang miliknya.
+                 */
+                transactionService.getByAttachmentAndUser(
+                        filename,
+                        username
+                );
+        
+                Path filePath =
+                        fileStorageService.getFile(filename);
+        
+                if (!Files.exists(filePath)) {
+        
+                    return ResponseEntity
+                            .notFound()
+                            .build();
+                }
+        
+                Resource resource =
+                        new UrlResource(
+                                filePath.toUri()
+                        );
+        
+                String contentType =
+                        Files.probeContentType(filePath);
+        
+                if (contentType == null) {
+        
+                    contentType =
+                            MediaType.APPLICATION_OCTET_STREAM_VALUE;
+                }
+        
+                return ResponseEntity
+                        .ok()
+                        .contentType(
+                                MediaType.parseMediaType(
+                                        contentType
+                                )
+                        )
+                        .header(
+                                HttpHeaders.CONTENT_DISPOSITION,
+                                "inline; filename=\"" +
+                                        filePath.getFileName() +
+                                        "\""
+                        )
+                        .body(resource);
+        
+            } catch (IllegalArgumentException e) {
+        
+                /*
+                 * Attachment bukan milik USER
+                 * atau tidak terdaftar pada transaksi.
+                 */
                 return ResponseEntity
                         .notFound()
                         .build();
+        
+            } catch (Exception e) {
+        
+                return ResponseEntity
+                        .internalServerError()
+                        .build();
             }
-
-            Resource resource =
-                    new UrlResource(
-                            filePath.toUri()
-                    );
-
-            String contentType =
-                    Files.probeContentType(filePath);
-
-            if (contentType == null) {
-
-                contentType =
-                        MediaType.APPLICATION_OCTET_STREAM_VALUE;
-            }
-
-            return ResponseEntity
-                    .ok()
-                    .contentType(
-                            MediaType.parseMediaType(
-                                    contentType
-                            )
-                    )
-                    .header(
-                            HttpHeaders.CONTENT_DISPOSITION,
-                            "inline; filename=\"" +
-                                    filePath.getFileName() +
-                                    "\""
-                    )
-                    .body(resource);
-
-        } catch (Exception e) {
-
-            return ResponseEntity
-                    .internalServerError()
-                    .build();
         }
-    }
 
     // =========================================================
     // CHECK ADMIN

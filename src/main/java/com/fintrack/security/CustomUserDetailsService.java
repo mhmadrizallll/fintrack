@@ -29,29 +29,35 @@ public class CustomUserDetailsService
         User user = userRepository
                 .findByUsername(username)
                 .orElseThrow(() ->
-                    new UsernameNotFoundException(
-                        "User tidak ditemukan"
-                    )
+                        new UsernameNotFoundException(
+                                "Username atau password salah."
+                        )
                 );
+
+        boolean active =
+                "ACTIVE".equalsIgnoreCase(
+                        user.getStatus()
+                );
+
+        String role =
+                user.getRole() != null
+                        ? user.getRole().toUpperCase()
+                        : "USER";
 
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getUsername())
                 .password(user.getPassword())
                 .authorities(
-                    List.of(
-                        new SimpleGrantedAuthority(
-                            "ROLE_" + user.getRole()
+                        List.of(
+                                new SimpleGrantedAuthority(
+                                        "ROLE_" + role
+                                )
                         )
-                    )
                 )
                 .accountExpired(false)
                 .accountLocked(false)
                 .credentialsExpired(false)
-                .disabled(
-                    !"ACTIVE".equalsIgnoreCase(
-                        user.getStatus()
-                    )
-                )
+                .disabled(!active)
                 .build();
     }
 }

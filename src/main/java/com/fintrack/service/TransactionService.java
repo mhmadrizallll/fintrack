@@ -16,6 +16,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 @Service
 public class TransactionService {
 
@@ -54,6 +58,48 @@ public class TransactionService {
                             username
                     );
         }
+        
+        // =========================================================
+// PAGINATION - GET ALL
+// =========================================================
+
+public Page<Transaction> getAllPaginated(
+        int page,
+        int size) {
+
+    Pageable pageable =
+            PageRequest.of(
+                    page,
+                    size
+            );
+
+    return transactionRepository
+            .findAllByOrderByTransactionDateDescIdDesc(
+                    pageable
+            );
+}
+
+// =========================================================
+// PAGINATION - GET ALL BY USER
+// =========================================================
+
+public Page<Transaction> getAllByUserPaginated(
+        String username,
+        int page,
+        int size) {
+
+    Pageable pageable =
+            PageRequest.of(
+                    page,
+                    size
+            );
+
+    return transactionRepository
+            .findByCreatedByOrderByTransactionDateDescIdDesc(
+                    username,
+                    pageable
+            );
+}
         
         // =========================================================
         // GET BY USER + DATE
@@ -885,4 +931,20 @@ public List<Transaction> getRecentTransactionsByUser(String username) {
 
         return code;
     }
+    
+    public Transaction getByAttachmentAndUser(
+        String attachment,
+        String username) {
+
+    return transactionRepository
+            .findByAttachmentAndCreatedBy(
+                    attachment,
+                    username
+            )
+            .orElseThrow(() ->
+                    new IllegalArgumentException(
+                            "Attachment tidak ditemukan"
+                    )
+            );
+}
 }

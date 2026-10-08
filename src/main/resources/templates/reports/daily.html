@@ -371,14 +371,14 @@
 
                   <td>
                     <span
-                      th:text="${'+ Rp ' + #numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA')}"
+                      th:if="${transaction.type.name() == 'INCOME'}"
                       class="badge-income"
                     >
                       INCOME
                     </span>
 
                     <span
-                      th:text="${'- Rp ' + #numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA')}"
+                      th:if="${transaction.type.name() == 'EXPENSE'}"
                       class="badge-expense"
                     >
                       EXPENSE
@@ -390,18 +390,20 @@
                   <td th:text="${transaction.fundSource.name}">CASH</td>
 
                   <td>
+                    <!-- INCOME -->
                     <span
                       th:if="${transaction.type.name() == 'INCOME'}"
                       class="amount-income"
-                      th:text="${'+ ' + #numbers.formatCurrency(transaction.amount)}"
+                      th:text="${'+ Rp ' + #numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA')}"
                     >
                       + Rp 20.000
                     </span>
 
+                    <!-- EXPENSE -->
                     <span
                       th:if="${transaction.type.name() == 'EXPENSE'}"
                       class="amount-expense"
-                      th:text="${'- ' + #numbers.formatCurrency(transaction.amount)}"
+                      th:text="${'- Rp ' + #numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA')}"
                     >
                       - Rp 20.000
                     </span>

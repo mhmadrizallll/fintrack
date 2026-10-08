@@ -23,36 +23,80 @@ public class SecurityConfig {
 
         http
             .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/login", "/css/**", "/js/**", "/images/**").permitAll()
-    
-            // transaksi dan laporan bisa diakses USER maupun ADMIN
-            .requestMatchers("/transactions/**").authenticated()
-            .requestMatchers("/reports/**").authenticated()
-    
-            // khusus ADMIN
-            .requestMatchers("/admin/**").hasRole("ADMIN")
-    
-            .anyRequest().authenticated()
-    )
+
+                // =====================================================
+                // PUBLIC
+                // =====================================================
+
+                .requestMatchers(
+                        "/login",
+                        "/css/**",
+                        "/js/**",
+                        "/images/**"
+                ).permitAll()
+
+
+                // =====================================================
+                // USER + ADMIN
+                // =====================================================
+
+                .requestMatchers(
+                        "/dashboard"
+                ).authenticated()
+
+                .requestMatchers(
+                        "/transactions/**"
+                ).authenticated()
+
+                .requestMatchers(
+                        "/reports/**"
+                ).authenticated()
+
+
+                // =====================================================
+                // ADMIN ONLY
+                // =====================================================
+
+                .requestMatchers(
+                        "/admin/**"
+                ).hasRole("ADMIN")
+
+
+                // =====================================================
+                // DEFAULT
+                // =====================================================
+
+                .anyRequest().authenticated()
+            )
+
+
+            // =========================================================
+            // LOGIN
+            // =========================================================
 
             .formLogin(form -> form
 
                 .loginPage("/login")
 
                 .defaultSuccessUrl(
-                    "/dashboard",
-                    true
+                        "/dashboard",
+                        true
                 )
 
                 .permitAll()
             )
+
+
+            // =========================================================
+            // LOGOUT
+            // =========================================================
 
             .logout(logout -> logout
 
                 .logoutUrl("/logout")
 
                 .logoutSuccessUrl(
-                    "/login?logout"
+                        "/login?logout"
                 )
 
                 .permitAll()
