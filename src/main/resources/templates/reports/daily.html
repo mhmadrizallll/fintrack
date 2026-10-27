@@ -209,6 +209,22 @@
           flex: 1;
         }
       }
+
+      .badge-transfer {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #dbeafe;
+        color: #1d4ed8;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .amount-transfer {
+        color: #2563eb;
+        font-weight: 700;
+      }
     </style>
   </head>
 
@@ -318,7 +334,7 @@
         <!-- TRANSACTION TABLE -->
         <div class="card table-card">
           <div class="card-header">
-            <div class="report-date-title">
+            <div class="report-date-title" style="padding: 15px">
               <h3>
                 Transaksi
                 <span
@@ -371,28 +387,53 @@
 
                   <td>
                     <span
-                      th:if="${transaction.type.name() == 'INCOME'}"
+                      th:if="${transaction.type != null and transaction.type.name() == 'INCOME'}"
                       class="badge-income"
                     >
                       INCOME
                     </span>
 
                     <span
-                      th:if="${transaction.type.name() == 'EXPENSE'}"
+                      th:if="${transaction.type != null and transaction.type.name() == 'EXPENSE'}"
                       class="badge-expense"
                     >
                       EXPENSE
                     </span>
+
+                    <span
+                      th:if="${transaction.type != null and transaction.type.name() == 'TRANSFER'}"
+                      class="badge-transfer"
+                    >
+                      TRANSFER
+                    </span>
+
+                    <span th:if="${transaction.type == null}">-</span>
                   </td>
 
-                  <td th:text="${transaction.category.name}">Category</td>
+                  <td>
+                    <span
+                      th:text="${transaction.category != null
+      ? transaction.category.name
+      : '-'}"
+                    >
+                      Category
+                    </span>
+                  </td>
 
-                  <td th:text="${transaction.fundSource.name}">CASH</td>
+                  <td>
+                    <span
+                      th:text="${transaction.fundSource != null
+      ? transaction.fundSource.name
+      : '-'}"
+                    >
+                      CASH
+                    </span>
+                  </td>
 
                   <td>
                     <!-- INCOME -->
                     <span
-                      th:if="${transaction.type.name() == 'INCOME'}"
+                      th:if="${transaction.type != null and transaction.type.name() == 'INCOME'}"
                       class="amount-income"
                       th:text="${'+ Rp ' + #numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA')}"
                     >
@@ -401,12 +442,23 @@
 
                     <!-- EXPENSE -->
                     <span
-                      th:if="${transaction.type.name() == 'EXPENSE'}"
+                      th:if="${transaction.type != null and transaction.type.name() == 'EXPENSE'}"
                       class="amount-expense"
                       th:text="${'- Rp ' + #numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA')}"
                     >
                       - Rp 20.000
                     </span>
+
+                    <!-- Transfer -->
+                    <span
+                      th:if="${transaction.type != null and transaction.type.name() == 'TRANSFER'}"
+                      class="amount-transfer"
+                      th:text="${'Rp ' + #numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA')}"
+                    >
+                      Rp 100.000
+                    </span>
+
+                    <span th:if="${transaction.type == null}">-</span>
                   </td>
 
                   <td

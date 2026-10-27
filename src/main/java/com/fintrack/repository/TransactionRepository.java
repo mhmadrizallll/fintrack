@@ -1,66 +1,64 @@
+
 package com.fintrack.repository;
 
 import com.fintrack.entity.Transaction;
 import com.fintrack.entity.TransactionType;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 public interface TransactionRepository
         extends JpaRepository<Transaction, Long> {
-        
-        
-        
 
     // =========================================================
     // GET ALL
     // =========================================================
 
-    @EntityGraph(attributePaths = {"category", "fundSource"})
+    @EntityGraph(attributePaths = {"category", "fundSource", "destinationFundSource"})
     List<Transaction> findAllByOrderByTransactionDateDescIdDesc();
-    
-    // =========================================================
-// PAGINATION - GET ALL
-// =========================================================
 
-@EntityGraph(attributePaths = {"category", "fundSource"})
-Page<Transaction> findAllByOrderByTransactionDateDescIdDesc(
-        Pageable pageable
-);
+    // =========================================================
+    // PAGINATION - GET ALL
+    // =========================================================
+
+    @EntityGraph(attributePaths = {"category", "fundSource", "destinationFundSource"})
+    Page<Transaction> findAllByOrderByTransactionDateDescIdDesc(
+            Pageable pageable
+    );
 
     // =========================================================
     // GET BY USER
     // =========================================================
 
-    @EntityGraph(attributePaths = {"category", "fundSource"})
+    @EntityGraph(attributePaths = {"category", "fundSource", "destinationFundSource"})
     List<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
             String createdBy
     );
-    
-    // =========================================================
-// PAGINATION - GET BY USER
-// =========================================================
 
-@EntityGraph(attributePaths = {"category", "fundSource"})
-Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
-        String createdBy,
-        Pageable pageable
-);
+    // =========================================================
+    // PAGINATION - GET BY USER
+    // =========================================================
+
+    @EntityGraph(attributePaths = {"category", "fundSource", "destinationFundSource"})
+    Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
+            String createdBy,
+            Pageable pageable
+    );
 
     // =========================================================
     // GET BY TYPE
     // =========================================================
 
-    @EntityGraph(attributePaths = {"category", "fundSource"})
+    @EntityGraph(attributePaths = {"category", "fundSource", "destinationFundSource"})
     List<Transaction> findByTypeOrderByTransactionDateDescIdDesc(
             TransactionType type
     );
@@ -69,7 +67,7 @@ Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
     // GET BY USER + TYPE
     // =========================================================
 
-    @EntityGraph(attributePaths = {"category", "fundSource"})
+    @EntityGraph(attributePaths = {"category", "fundSource", "destinationFundSource"})
     List<Transaction> findByCreatedByAndTypeOrderByTransactionDateDescIdDesc(
             String createdBy,
             TransactionType type
@@ -79,7 +77,7 @@ Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
     // GET BY DATE RANGE
     // =========================================================
 
-    @EntityGraph(attributePaths = {"category", "fundSource"})
+    @EntityGraph(attributePaths = {"category", "fundSource", "destinationFundSource"})
     List<Transaction> findByTransactionDateBetweenOrderByTransactionDateDescIdDesc(
             LocalDate startDate,
             LocalDate endDate
@@ -89,7 +87,7 @@ Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
     // GET BY USER + DATE RANGE
     // =========================================================
 
-    @EntityGraph(attributePaths = {"category", "fundSource"})
+    @EntityGraph(attributePaths = {"category", "fundSource", "destinationFundSource"})
     List<Transaction> findByCreatedByAndTransactionDateBetweenOrderByTransactionDateDescIdDesc(
             String createdBy,
             LocalDate startDate,
@@ -100,7 +98,7 @@ Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
     // GET BY DATE
     // =========================================================
 
-    @EntityGraph(attributePaths = {"category", "fundSource"})
+    @EntityGraph(attributePaths = {"category", "fundSource", "destinationFundSource"})
     List<Transaction> findByTransactionDateOrderByIdDesc(
             LocalDate transactionDate
     );
@@ -109,34 +107,34 @@ Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
     // GET BY USER + DATE
     // =========================================================
 
-    @EntityGraph(attributePaths = {"category", "fundSource"})
+    @EntityGraph(attributePaths = {"category", "fundSource", "destinationFundSource"})
     List<Transaction> findByCreatedByAndTransactionDateOrderByIdDesc(
             String createdBy,
             LocalDate transactionDate
     );
-    
+
     // =========================================================
-        // GET BY ID + USER
-        // =========================================================
-        
-        @EntityGraph(attributePaths = {"category", "fundSource"})
-        Optional<Transaction> findByIdAndCreatedBy(
-                Long id,
-                String createdBy
-        );
+    // GET BY ID + USER
+    // =========================================================
+
+    @EntityGraph(attributePaths = {"category", "fundSource", "destinationFundSource"})
+    Optional<Transaction> findByIdAndCreatedBy(
+            Long id,
+            String createdBy
+    );
 
     // =========================================================
     // RECENT 5
     // =========================================================
 
-    @EntityGraph(attributePaths = {"category", "fundSource"})
+    @EntityGraph(attributePaths = {"category", "fundSource", "destinationFundSource"})
     List<Transaction> findTop5ByOrderByTransactionDateDescIdDesc();
 
     // =========================================================
     // RECENT 5 BY USER
     // =========================================================
 
-    @EntityGraph(attributePaths = {"category", "fundSource"})
+    @EntityGraph(attributePaths = {"category", "fundSource", "destinationFundSource"})
     List<Transaction> findTop5ByCreatedByOrderByTransactionDateDescIdDesc(
             String createdBy
     );
@@ -145,7 +143,7 @@ Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
     // GET BY DATE RANGE - ID DESC
     // =========================================================
 
-    @EntityGraph(attributePaths = {"category", "fundSource"})
+    @EntityGraph(attributePaths = {"category", "fundSource", "destinationFundSource"})
     List<Transaction> findByTransactionDateBetweenOrderByIdDesc(
             LocalDate startDate,
             LocalDate endDate
@@ -155,7 +153,7 @@ Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
     // GET BY USER + DATE RANGE - ID DESC
     // =========================================================
 
-    @EntityGraph(attributePaths = {"category", "fundSource"})
+    @EntityGraph(attributePaths = {"category", "fundSource", "destinationFundSource"})
     List<Transaction> findByCreatedByAndTransactionDateBetweenOrderByIdDesc(
             String createdBy,
             LocalDate startDate,
@@ -176,6 +174,8 @@ Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
 
     boolean existsByFundSourceId(Long fundSourceId);
 
+    boolean existsByDestinationFundSourceId(Long fundSourceId);
+
     // =========================================================
     // TOTAL BY TYPE - ALL USER
     // =========================================================
@@ -186,7 +186,7 @@ Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
         WHERE t.type = :type
     """)
     BigDecimal getTotalByType(
-            TransactionType type
+            @Param("type") TransactionType type
     );
 
     // =========================================================
@@ -200,8 +200,8 @@ Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
         AND t.type = :type
     """)
     BigDecimal getTotalByUserAndType(
-            String createdBy,
-            TransactionType type
+            @Param("createdBy") String createdBy,
+            @Param("type") TransactionType type
     );
 
     // =========================================================
@@ -215,8 +215,8 @@ Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
         AND t.type = :type
     """)
     BigDecimal getTotalByDateAndType(
-            LocalDate date,
-            TransactionType type
+            @Param("date") LocalDate date,
+            @Param("type") TransactionType type
     );
 
     // =========================================================
@@ -231,9 +231,9 @@ Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
         AND t.type = :type
     """)
     BigDecimal getTotalByUserAndDateAndType(
-            String createdBy,
-            LocalDate date,
-            TransactionType type
+            @Param("createdBy") String createdBy,
+            @Param("date") LocalDate date,
+            @Param("type") TransactionType type
     );
 
     // =========================================================
@@ -247,9 +247,9 @@ Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
         AND t.type = :type
     """)
     BigDecimal getTotalByDateRangeAndType(
-            LocalDate startDate,
-            LocalDate endDate,
-            TransactionType type
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("type") TransactionType type
     );
 
     // =========================================================
@@ -264,10 +264,10 @@ Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
         AND t.type = :type
     """)
     BigDecimal getTotalByUserAndDateRangeAndType(
-            String createdBy,
-            LocalDate startDate,
-            LocalDate endDate,
-            TransactionType type
+            @Param("createdBy") String createdBy,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("type") TransactionType type
     );
 
     // =========================================================
@@ -280,8 +280,8 @@ Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
         WHERE t.transactionDate BETWEEN :startDate AND :endDate
     """)
     long countByDateRange(
-            LocalDate startDate,
-            LocalDate endDate
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
     );
 
     // =========================================================
@@ -295,9 +295,9 @@ Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
         AND t.transactionDate BETWEEN :startDate AND :endDate
     """)
     long countByUserAndDateRange(
-            String createdBy,
-            LocalDate startDate,
-            LocalDate endDate
+            @Param("createdBy") String createdBy,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
     );
 
     // =========================================================
@@ -314,8 +314,8 @@ Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
         ORDER BY t.transactionDate ASC
     """)
     List<Object[]> getDailySummary(
-            LocalDate startDate,
-            LocalDate endDate
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
     );
 
     // =========================================================
@@ -333,13 +333,99 @@ Page<Transaction> findByCreatedByOrderByTransactionDateDescIdDesc(
         ORDER BY t.transactionDate ASC
     """)
     List<Object[]> getDailySummaryByUser(
-            String createdBy,
-            LocalDate startDate,
-            LocalDate endDate
+            @Param("createdBy") String createdBy,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
     );
-    
-            Optional<Transaction> findByAttachmentAndCreatedBy(
-                String attachment,
-                String createdBy
-        );
+
+    // =========================================================
+    // BALANCE BY FUND SOURCE
+    //
+    // INCOME   = positive
+    // EXPENSE  = negative
+    // TRANSFER = handled as outgoing/incoming separately
+    // =========================================================
+
+    @Query("""
+        SELECT
+            COALESCE(SUM(
+                CASE
+                    WHEN t.type = :income
+         AND t.fundSource.id = :fundSourceId
+         THEN t.amount
+
+    WHEN t.type = :expense
+         AND t.fundSource.id = :fundSourceId
+         THEN -t.amount
+
+    WHEN t.type = :transfer
+         AND t.fundSource.id = :fundSourceId
+         THEN -t.amount
+
+    WHEN t.type = :transfer
+         AND t.destinationFundSource.id = :fundSourceId
+         THEN t.amount
+
+    ELSE 0
+                END
+            ), 0)
+        FROM Transaction t
+        WHERE t.fundSource.id = :fundSourceId
+           OR t.destinationFundSource.id = :fundSourceId
+    """)
+    BigDecimal calculateBalanceByFundSource(
+            @Param("fundSourceId") Long fundSourceId,
+            @Param("income") TransactionType income,
+            @Param("expense") TransactionType expense,
+            @Param("transfer") TransactionType transfer
+    );
+
+    // =========================================================
+    // BALANCE BY FUND SOURCE + USER
+    // =========================================================
+
+    @Query("""
+        SELECT
+            COALESCE(SUM(
+                CASE
+                    WHEN t.type = :income
+         AND t.fundSource.id = :fundSourceId
+         THEN t.amount
+
+    WHEN t.type = :expense
+         AND t.fundSource.id = :fundSourceId
+         THEN -t.amount
+
+    WHEN t.type = :transfer
+         AND t.fundSource.id = :fundSourceId
+         THEN -t.amount
+
+    WHEN t.type = :transfer
+         AND t.destinationFundSource.id = :fundSourceId
+         THEN t.amount
+
+    ELSE 0
+                END
+            ), 0)
+        FROM Transaction t
+        WHERE (t.fundSource.id = :fundSourceId
+            OR t.destinationFundSource.id = :fundSourceId)
+          AND t.createdBy = :createdBy
+    """)
+    BigDecimal calculateBalanceByFundSourceAndUser(
+            @Param("fundSourceId") Long fundSourceId,
+            @Param("createdBy") String createdBy,
+            @Param("income") TransactionType income,
+            @Param("expense") TransactionType expense,
+            @Param("transfer") TransactionType transfer
+    );
+
+    // =========================================================
+    // ATTACHMENT BY USER
+    // =========================================================
+
+    Optional<Transaction> findByAttachmentAndCreatedBy(
+            String attachment,
+            String createdBy
+    );
 }

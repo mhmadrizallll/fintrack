@@ -1,14 +1,19 @@
+
 package com.fintrack.service;
 
 import com.fintrack.entity.FundSource;
+import com.fintrack.entity.TransactionType;
 import com.fintrack.repository.FundSourceRepository;
 import com.fintrack.repository.TransactionRepository;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class FundSourceService {
 
     private final FundSourceRepository fundSourceRepository;
@@ -18,11 +23,8 @@ public class FundSourceService {
             FundSourceRepository fundSourceRepository,
             TransactionRepository transactionRepository) {
 
-        this.fundSourceRepository =
-                fundSourceRepository;
-
-        this.transactionRepository =
-                transactionRepository;
+        this.fundSourceRepository = fundSourceRepository;
+        this.transactionRepository = transactionRepository;
     }
 
     // =========================================================
@@ -30,7 +32,6 @@ public class FundSourceService {
     // =========================================================
 
     public List<FundSource> getAllActive() {
-
         return fundSourceRepository
                 .findByStatusOrderByNameAsc("ACTIVE");
     }
@@ -40,29 +41,74 @@ public class FundSourceService {
     // =========================================================
 
     public FundSource getById(Long id) {
-
         return fundSourceRepository
                 .findById(id)
                 .orElseThrow(() ->
                         new IllegalArgumentException(
-                                "Fund Source tidak ditemukan: "
-                                        + id
+                                "Fund Source tidak ditemukan: " + id
                         )
                 );
     }
 
     // =========================================================
-    // SAVE
-    // CREATE / UPDATE
+    // GET CURRENT BALANCE - ALL TRANSACTIONS
     // =========================================================
 
-    public FundSource save(
-            FundSource fundSource) {
+    public BigDecimal getBalance(Long fundSourceId) {
 
-        // =====================================================
+        getById(fundSourceId);
+
+        return transactionRepository.calculateBalanceByFundSource(
+                fundSourceId,
+                TransactionType.INCOME,
+                TransactionType.EXPENSE,
+                TransactionType.TRANSFER
+        );
+    }
+
+    // =========================================================
+    // GET CURRENT BALANCE - BY USER
+    // =========================================================
+
+    public BigDecimal getBalanceByUser(
+            Long fundSourceId,
+            String username) {
+
+        getById(fundSourceId);
+
+        return transactionRepository
+                .calculateBalanceByFundSourceAndUser(
+                        fundSourceId,
+                        username,
+                        TransactionType.INCOME,
+                        TransactionType.EXPENSE,
+                        TransactionType.TRANSFER
+                );
+    }
+
+    // =========================================================
+    // GET ALL ACTIVE WITH BALANCE
+    // =========================================================
+
+    public List<FundSourceBalance> getAllActiveWithBalance() {
+
+        return getAllActive()
+                .stream()
+                .map(fundSource -> new FundSourceBalance(
+                        fundSource,
+                        getBalance(fundSource.getId())
+                ))
+                .toList();
+    }
+
+    // =========================================================
+    // SAVE - CREATE / UPDATE
+    // =========================================================
+
+    @Transactional
+    public FundSource save(FundSource fundSource) {
+
         // CREATE
-        // =====================================================
-
         if (fundSource.getId() == null) {
 
             if (fundSource.getStatus() == null
@@ -71,92 +117,58 @@ public class FundSourceService {
                 fundSource.setStatus("ACTIVE");
             }
 
-            return fundSourceRepository.save(
-                    fundSource
-            );
+            return fundSourceRepository.save(fundSource);
         }
 
-        // =====================================================
         // UPDATE
-        // =====================================================
+        FundSource existing = getById(fundSource.getId());
 
-        FundSource existing =
-                fundSourceRepository
-                        .findById(
-                                fundSource.getId()
-                        )
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "Fund Source tidak ditemukan: "
-                                                + fundSource.getId()
-                                )
-                        );
-
-        existing.setName(
-                fundSource.getName()
-        );
-
-        existing.setType(
-                fundSource.getType()
-        );
-
-        existing.setDescription(
-                fundSource.getDescription()
-        );
+        existing.setName(fundSource.getName());
+        existing.setType(fundSource.getType());
+        existing.setDescription(fundSource.getDescription());
 
         if (fundSource.getStatus() != null
                 && !fundSource.getStatus().isBlank()) {
 
-            existing.setStatus(
-                    fundSource.getStatus()
-            );
+            existing.setStatus(fundSource.getStatus());
         }
 
-        return fundSourceRepository.save(
-                existing
-        );
+        return fundSourceRepository.save(existing);
     }
 
     // =========================================================
-    // DELETE / DEACTIVATE
+    // DEACTIVATE
     // =========================================================
 
+    @Transactional
     public void deactivate(Long id) {
 
-        // -----------------------------------------------------
-        // Pastikan fund source ada
-        // -----------------------------------------------------
+        FundSource fundSource = getById(id);
 
-        FundSource fundSource =
-                getById(id);
+        boolean usedAsSource =
+                transactionRepository.existsByFundSourceId(id);
 
-        // -----------------------------------------------------
-        // Cek apakah sudah digunakan transaksi
-        // -----------------------------------------------------
+        boolean usedAsDestination =
+                transactionRepository.existsByDestinationFundSourceId(id);
 
-        boolean used =
-                transactionRepository
-                        .existsByFundSourceId(id);
-
-        if (used) {
-
+        if (usedAsSource || usedAsDestination) {
             throw new IllegalStateException(
-                    "Fund Source \""
-                            + fundSource.getName()
-                            + "\" tidak dapat dihapus "
-                            + "karena sudah digunakan "
-                            + "pada transaksi."
+                    "Fund Source \"" + fundSource.getName()
+                            + "\" tidak dapat dinonaktifkan karena "
+                            + "sudah digunakan pada transaksi."
             );
         }
 
-        // -----------------------------------------------------
-        // Kalau belum digunakan → INACTIVE
-        // -----------------------------------------------------
-
         fundSource.setStatus("INACTIVE");
+        fundSourceRepository.save(fundSource);
+    }
 
-        fundSourceRepository.save(
-                fundSource
-        );
+    // =========================================================
+    // BALANCE RESULT
+    // =========================================================
+
+    public record FundSourceBalance(
+            FundSource fundSource,
+            BigDecimal balance) {
     }
 }

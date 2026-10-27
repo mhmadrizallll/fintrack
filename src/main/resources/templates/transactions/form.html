@@ -250,9 +250,7 @@
 
       .type-selector {
         display: grid;
-
-        grid-template-columns: repeat(2, 1fr);
-
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 10px;
       }
 
@@ -318,6 +316,15 @@
 
       .type-expense-icon {
         background: #fef2f2;
+      }
+
+      .type-transfer-icon {
+        background: #f5f3ff;
+      }
+
+      .type-option input:disabled + label {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
 
       .type-option-title {
@@ -540,6 +547,31 @@
                             </span>
                           </label>
                         </div>
+
+                        <!-- TRANSFER -->
+                        <div class="type-option">
+                          <input
+                            type="radio"
+                            id="transfer"
+                            th:field="*{type}"
+                            value="TRANSFER"
+                            required
+                          />
+
+                          <label for="transfer">
+                            <span class="type-option-icon type-transfer-icon">
+                              ⇄
+                            </span>
+
+                            <span>
+                              <span class="type-option-title">Transfer</span>
+
+                              <span class="type-option-description">
+                                Pindah sumber dana
+                              </span>
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -622,6 +654,40 @@
 
                       <small class="form-help">
                         Sumber uang yang digunakan.
+                      </small>
+                    </div>
+                  </div>
+
+                  <!-- DESTINATION FUND SOURCE -->
+                  <div
+                    class="form-row"
+                    id="destinationFundSourceGroup"
+                    style="display: none"
+                  >
+                    <div class="form-group">
+                      <label class="form-label" for="destinationFundSource">
+                        Sumber Dana Tujuan
+                        <span class="required">*</span>
+                      </label>
+
+                      <select
+                        id="destinationFundSource"
+                        class="form-select"
+                        th:field="*{destinationFundSource.id}"
+                      >
+                        <option value="">Pilih sumber dana tujuan</option>
+
+                        <option
+                          th:each="source : ${fundSources}"
+                          th:value="${source.id}"
+                          th:text="${source.name}"
+                        >
+                          Bank
+                        </option>
+                      </select>
+
+                      <small class="form-help">
+                        Pilih sumber dana yang menerima transfer.
                       </small>
                     </div>
                   </div>
@@ -789,63 +855,105 @@
       <div th:replace="~{fragments/layout :: scripts}"></div>
     </div>
 
-    <!-- =========================================================
-     CATEGORY FILTER
-     ========================================================= -->
-
+    <!-- CATEGORY FILTER + TRANSFER -->
     <script>
-      const incomeRadio = document.getElementById("income");
-      const expenseRadio = document.getElementById("expense");
-      const categorySelect = document.getElementById("category");
+      document.addEventListener("DOMContentLoaded", function () {
+        const incomeRadio = document.getElementById("income");
+        const expenseRadio = document.getElementById("expense");
+        const transferRadio = document.getElementById("transfer");
 
-      function filterCategories() {
-        if (!categorySelect) {
-          return;
-        }
+        const categorySelect = document.getElementById("category");
 
-        let selectedType = null;
+        const fundSourceSelect = document.getElementById("fundSource");
+        const destinationSelect = document.getElementById(
+          "destinationFundSource",
+        );
 
-        if (incomeRadio && incomeRadio.checked) {
-          selectedType = "INCOME";
-        } else if (expenseRadio && expenseRadio.checked) {
-          selectedType = "EXPENSE";
-        }
+        const destinationGroup = document.getElementById(
+          "destinationFundSourceGroup",
+        );
 
-        const groups = categorySelect.querySelectorAll("optgroup");
+        function filterCategories() {
+          if (!categorySelect) return;
 
-        groups.forEach(function (group) {
-          const label = (group.getAttribute("label") || "").toUpperCase();
+          let selectedType = null;
 
-          if (!selectedType) {
-            group.style.display = "";
-            return;
+          if (incomeRadio.checked) {
+            selectedType = "INCOME";
+          } else if (expenseRadio.checked) {
+            selectedType = "EXPENSE";
           }
 
-          group.style.display = label === selectedType ? "" : "none";
+          const groups = categorySelect.querySelectorAll("optgroup");
+
+          groups.forEach(function (group) {
+            const label = (group.getAttribute("label") || "").toUpperCase();
+
+            if (!selectedType) {
+              group.style.display = "";
+              return;
+            }
+
+            group.style.display = label === selectedType ? "" : "none";
+          });
+
+          const selectedOption =
+            categorySelect.options[categorySelect.selectedIndex];
+
+          if (
+            selectedType &&
+            selectedOption &&
+            selectedOption.parentElement &&
+            selectedOption.parentElement.tagName === "OPTGROUP" &&
+            selectedOption.parentElement.style.display === "none"
+          ) {
+            categorySelect.value = "";
+          }
+        }
+
+        function toggleTransferFields() {
+          const isTransfer = transferRadio.checked;
+
+          destinationGroup.style.display = isTransfer ? "" : "none";
+
+          destinationSelect.required = isTransfer;
+
+          if (!isTransfer) {
+            destinationSelect.value = "";
+          }
+
+          if (fundSourceSelect && destinationSelect) {
+            const sourceId = fundSourceSelect.value;
+
+            Array.from(destinationSelect.options).forEach(function (option) {
+              if (!option.value) return;
+
+              option.disabled = option.value === sourceId;
+            });
+
+            if (
+              destinationSelect.value &&
+              destinationSelect.value === sourceId
+            ) {
+              destinationSelect.value = "";
+            }
+          }
+        }
+
+        [incomeRadio, expenseRadio, transferRadio].forEach(function (radio) {
+          radio.addEventListener("change", function () {
+            filterCategories();
+            toggleTransferFields();
+          });
         });
 
-        const selectedOption =
-          categorySelect.options[categorySelect.selectedIndex];
-
-        if (
-          selectedOption &&
-          selectedOption.parentElement &&
-          selectedOption.parentElement.tagName === "OPTGROUP" &&
-          selectedOption.parentElement.style.display === "none"
-        ) {
-          categorySelect.value = "";
+        if (fundSourceSelect) {
+          fundSourceSelect.addEventListener("change", toggleTransferFields);
         }
-      }
 
-      if (incomeRadio) {
-        incomeRadio.addEventListener("change", filterCategories);
-      }
-
-      if (expenseRadio) {
-        expenseRadio.addEventListener("change", filterCategories);
-      }
-
-      filterCategories();
+        filterCategories();
+        toggleTransferFields();
+      });
     </script>
   </body>
 </html>

@@ -19,6 +19,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TransactionService {
@@ -199,12 +200,141 @@ public Page<Transaction> getAllByUserPaginated(
                             )
                     );
         }
+        
+        // =========================================================
+// VALIDASI DAN PENENTUAN TUJUAN TRANSFER
+// =========================================================
+
+private FundSource resolveFundSource(Long id) {
+    if (id == null) {
+        throw new IllegalArgumentException(
+                "Sumber dana wajib dipilih."
+        );
+    }
+
+    FundSource fundSource = fundSourceRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException(
+                    "Sumber dana tidak ditemukan: " + id
+            ));
+
+    if (!"ACTIVE".equalsIgnoreCase(fundSource.getStatus())) {
+        throw new IllegalArgumentException(
+                "Sumber dana yang dipilih tidak aktif."
+        );
+    }
+
+    return fundSource;
+}
+
+private void validateTransaction(Transaction transaction) {
+
+    // =====================================================
+    // VALIDASI TIPE TRANSAKSI
+    // =====================================================
+
+    if (transaction.getType() == null) {
+        throw new IllegalArgumentException(
+                "Tipe transaksi wajib dipilih."
+        );
+    }
+
+    // =====================================================
+    // VALIDASI KATEGORI
+    // TRANSFER TIDAK MEMERLUKAN KATEGORI
+    // =====================================================
+
+    if (transaction.getType() == TransactionType.TRANSFER) {
+
+        transaction.setCategory(null);
+
+    } else {
+
+        if (transaction.getCategory() == null
+                || transaction.getCategory().getId() == null) {
+            throw new IllegalArgumentException(
+                    "Kategori transaksi wajib dipilih."
+            );
+        }
+
+        Category category = categoryRepository
+                .findById(transaction.getCategory().getId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Kategori tidak ditemukan."
+                ));
+
+        transaction.setCategory(category);
+    }
+
+    // =====================================================
+    // VALIDASI JUMLAH TRANSAKSI
+    // =====================================================
+
+    if (transaction.getAmount() == null
+            || transaction.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+        throw new IllegalArgumentException(
+                "Jumlah transaksi harus lebih besar dari nol."
+        );
+    }
+
+    // =====================================================
+    // VALIDASI SUMBER DANA ASAL
+    // =====================================================
+
+    if (transaction.getFundSource() == null
+            || transaction.getFundSource().getId() == null) {
+        throw new IllegalArgumentException(
+                "Sumber dana asal wajib dipilih."
+        );
+    }
+
+    FundSource source = resolveFundSource(
+            transaction.getFundSource().getId()
+    );
+
+    transaction.setFundSource(source);
+
+    // =====================================================
+    // VALIDASI TUJUAN TRANSFER
+    // =====================================================
+
+    if (transaction.getType() == TransactionType.TRANSFER) {
+
+        if (transaction.getDestinationFundSource() == null
+                || transaction.getDestinationFundSource().getId() == null) {
+            throw new IllegalArgumentException(
+                    "Sumber dana tujuan wajib dipilih untuk transfer."
+            );
+        }
+
+        Long sourceId = source.getId();
+
+        Long destinationId =
+                transaction.getDestinationFundSource().getId();
+
+        if (sourceId.equals(destinationId)) {
+            throw new IllegalArgumentException(
+                    "Sumber dana asal dan tujuan tidak boleh sama."
+            );
+        }
+
+        FundSource destination = resolveFundSource(destinationId);
+
+        transaction.setDestinationFundSource(destination);
+
+    } else {
+
+        transaction.setDestinationFundSource(null);
+    }
+}
 
     // =========================================================
     // SAVE / CREATE / UPDATE
     // =========================================================
 
-    public Transaction save(Transaction transaction) {
+    @Transactional
+public Transaction save(Transaction transaction) {
+
+    validateTransaction(transaction);
 
         // =====================================================
         // CREATE
@@ -259,6 +389,10 @@ public Page<Transaction> getAllByUserPaginated(
         existingTransaction.setType(
                 transaction.getType()
         );
+        
+        existingTransaction.setDestinationFundSource(
+                transaction.getDestinationFundSource()
+        );
 
         // -----------------------------------------------------
         // UPDATE CATEGORY
@@ -281,8 +415,8 @@ public Page<Transaction> getAllByUserPaginated(
                             );
 
             existingTransaction.setCategory(
-                    category
-            );
+                        transaction.getCategory()
+                );
         }
 
         // -----------------------------------------------------
@@ -343,9 +477,13 @@ public Page<Transaction> getAllByUserPaginated(
         // Kode transaksi tidak dibuat ulang ketika edit.
         //
         
-        existingTransaction.setAttachment(
-                transaction.getAttachment()
-        );
+        if (transaction.getAttachment() != null
+        && !transaction.getAttachment().isBlank()) {
+
+    existingTransaction.setAttachment(
+            transaction.getAttachment()
+    );
+}
 
 
         return transactionRepository.save(
@@ -356,7 +494,7 @@ public Page<Transaction> getAllByUserPaginated(
         // =========================================================
 // UPDATE BY USER
 // =========================================================
-
+@Transactional
 public Transaction updateByUser(
         Transaction transaction,
         String username) {
@@ -372,7 +510,7 @@ public Transaction updateByUser(
                                     "Transaction tidak ditemukan atau bukan milik Anda"
                             )
                     );
-
+validateTransaction(transaction);
     // -----------------------------------------------------
     // UPDATE DATE
     // -----------------------------------------------------
@@ -388,6 +526,10 @@ public Transaction updateByUser(
     existingTransaction.setType(
             transaction.getType()
     );
+    
+    existingTransaction.setDestinationFundSource(
+        transaction.getDestinationFundSource()
+);
 
     // -----------------------------------------------------
     // UPDATE CATEGORY
@@ -409,7 +551,9 @@ public Transaction updateByUser(
                                 )
                         );
 
-        existingTransaction.setCategory(category);
+        existingTransaction.setCategory(
+                        transaction.getCategory()
+                );
     }
 
     // -----------------------------------------------------
@@ -455,10 +599,13 @@ public Transaction updateByUser(
     // UPDATE ATTACHMENT
     // -----------------------------------------------------
 
+   if (transaction.getAttachment() != null
+        && !transaction.getAttachment().isBlank()) {
+
     existingTransaction.setAttachment(
             transaction.getAttachment()
     );
-
+}
     // -----------------------------------------------------
     // CREATED BY TETAP
     // -----------------------------------------------------
@@ -615,6 +762,38 @@ public List<Transaction> getRecentTransactionsByUser(String username) {
                         getTotalExpense()
                 );
     }
+    
+    
+    // =========================================================
+    // BALANCE BY FUND SOURCE
+    // =========================================================
+
+    public BigDecimal getBalanceByFundSource(Long fundSourceId) {
+        return transactionRepository.calculateBalanceByFundSource(
+                fundSourceId,
+                TransactionType.INCOME,
+                TransactionType.EXPENSE,
+                TransactionType.TRANSFER
+        );
+    }
+
+    // =========================================================
+    // BALANCE BY FUND SOURCE + USER
+    // =========================================================
+
+    public BigDecimal getBalanceByFundSourceAndUser(
+            Long fundSourceId,
+            String username) {
+
+        return transactionRepository.calculateBalanceByFundSourceAndUser(
+                fundSourceId,
+                username,
+                TransactionType.INCOME,
+                TransactionType.EXPENSE,
+                TransactionType.TRANSFER
+        );
+    }
+
 
     // =========================================================
     // TODAY INCOME

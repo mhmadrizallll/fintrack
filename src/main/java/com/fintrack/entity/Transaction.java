@@ -1,3 +1,4 @@
+
 package com.fintrack.entity;
 
 import jakarta.persistence.*;
@@ -27,41 +28,43 @@ public class Transaction {
     )
     private String transactionCode;
 
-    @Column(
-        name = "TRANSACTION_DATE",
-        nullable = false
-    )
+    @Column(name = "TRANSACTION_DATE", nullable = false)
     private LocalDate transactionDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(
-        name = "TYPE",
-        nullable = false,
-        length = 20
-    )
+    @Column(name = "TYPE", nullable = false, length = 20)
     private TransactionType type;
 
     // ==========================
     // CATEGORY
     // ==========================
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-        name = "CATEGORY_ID",
-        nullable = false
-    )
+    // ==========================
+    // CATEGORY
+    // Wajib untuk INCOME dan EXPENSE
+    // Opsional untuk TRANSFER
+    // ==========================
+    
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "CATEGORY_ID", nullable = true)
     private Category category;
 
     // ==========================
-    // FUND SOURCE
+    // SOURCE FUND
     // ==========================
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-        name = "FUND_SOURCE_ID",
-        nullable = false
-    )
+    @JoinColumn(name = "FUND_SOURCE_ID", nullable = false)
     private FundSource fundSource;
+
+    // ==========================
+    // DESTINATION FUND
+    // Khusus transaksi TRANSFER
+    // ==========================
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "DESTINATION_FUND_SOURCE_ID")
+    private FundSource destinationFundSource;
 
     // ==========================
     // AMOUNT
@@ -79,45 +82,31 @@ public class Transaction {
     // DESCRIPTION
     // ==========================
 
-    @Column(
-        name = "DESCRIPTION",
-        length = 1000
-    )
+    @Column(name = "DESCRIPTION", length = 1000)
     private String description;
 
     // ==========================
     // ATTACHMENT
     // ==========================
 
-    @Column(
-        name = "ATTACHMENT",
-        length = 500
-    )
+    @Column(name = "ATTACHMENT", length = 500)
     private String attachment;
 
     // ==========================
     // CREATED BY
     // ==========================
 
-    @Column(
-        name = "CREATED_BY",
-        length = 100
-    )
+    @Column(name = "CREATED_BY", length = 100)
     private String createdBy;
 
     // ==========================
     // TIMESTAMP
     // ==========================
 
-    @Column(
-        name = "CREATED_AT",
-        nullable = false
-    )
+    @Column(name = "CREATED_AT", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(
-        name = "UPDATED_AT"
-    )
+    @Column(name = "UPDATED_AT")
     private LocalDateTime updatedAt;
 
     // ==========================
@@ -126,7 +115,6 @@ public class Transaction {
 
     @PrePersist
     protected void onCreate() {
-
         createdAt = LocalDateTime.now();
 
         if (transactionDate == null) {
@@ -136,7 +124,6 @@ public class Transaction {
 
     @PreUpdate
     protected void onUpdate() {
-
         updatedAt = LocalDateTime.now();
     }
 
@@ -190,6 +177,16 @@ public class Transaction {
 
     public void setFundSource(FundSource fundSource) {
         this.fundSource = fundSource;
+    }
+
+    public FundSource getDestinationFundSource() {
+        return destinationFundSource;
+    }
+
+    public void setDestinationFundSource(
+        FundSource destinationFundSource
+    ) {
+        this.destinationFundSource = destinationFundSource;
     }
 
     public BigDecimal getAmount() {

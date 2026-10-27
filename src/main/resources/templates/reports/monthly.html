@@ -258,6 +258,22 @@
           flex: 1;
         }
       }
+
+      .badge-transfer {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #dbeafe;
+        color: #1d4ed8;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .amount-transfer {
+        color: #2563eb;
+        font-weight: 700;
+      }
     </style>
   </head>
 
@@ -597,62 +613,106 @@
 
                   <td>
                     <span
-                      th:if="${transaction.type.name() == 'INCOME'}"
+                      th:if="${transaction.type != null and transaction.type.name() == 'INCOME'}"
                       class="badge-income"
                     >
                       INCOME
                     </span>
 
                     <span
-                      th:if="${transaction.type.name() == 'EXPENSE'}"
+                      th:if="${transaction.type != null and transaction.type.name() == 'EXPENSE'}"
                       class="badge-expense"
                     >
                       EXPENSE
                     </span>
+
+                    <span
+                      th:if="${transaction.type != null and transaction.type.name() == 'TRANSFER'}"
+                      class="badge-transfer"
+                    >
+                      TRANSFER
+                    </span>
+
+                    <span th:if="${transaction.type == null}">-</span>
                   </td>
-
-                  <td th:text="${transaction.category.name}">Category</td>
-
-                  <td th:text="${transaction.fundSource.name}">CASH</td>
 
                   <td>
                     <span
-                      th:if="${transaction.type.name() == 'INCOME'}"
+                      th:text="${transaction.category != null
+      ? transaction.category.name
+      : '-'}"
+                    >
+                      Category
+                    </span>
+                  </td>
+
+                  <td>
+                    <span
+                      th:text="${transaction.fundSource != null
+      ? transaction.fundSource.name
+      : '-'}"
+                    >
+                      Cash
+                    </span>
+                  </td>
+
+                  <td>
+                    <!-- INCOME -->
+                    <span
+                      th:if="${transaction.type != null and transaction.type.name() == 'INCOME'}"
                       class="amount-income"
                     >
                       + Rp
-
                       <span
                         th:text="${#numbers.formatDecimal(
-                          transaction.amount,
-                          0,
-                          'COMMA',
-                          0,
-                          'POINT'
-                        )}"
+        transaction.amount,
+        0,
+        'COMMA',
+        0,
+        'POINT'
+      )}"
+                        >20,000</span
                       >
-                        20,000
-                      </span>
                     </span>
 
+                    <!-- EXPENSE -->
                     <span
-                      th:if="${transaction.type.name() == 'EXPENSE'}"
+                      th:if="${transaction.type != null and transaction.type.name() == 'EXPENSE'}"
                       class="amount-expense"
                     >
                       - Rp
-
                       <span
                         th:text="${#numbers.formatDecimal(
-                          transaction.amount,
-                          0,
-                          'COMMA',
-                          0,
-                          'POINT'
-                        )}"
+        transaction.amount,
+        0,
+        'COMMA',
+        0,
+        'POINT'
+      )}"
+                        >20,000</span
                       >
-                        20,000
-                      </span>
                     </span>
+
+                    <!-- TRANSFER -->
+                    <span
+                      th:if="${transaction.type != null and transaction.type.name() == 'TRANSFER'}"
+                      class="amount-transfer"
+                    >
+                      Rp
+                      <span
+                        th:text="${#numbers.formatDecimal(
+        transaction.amount,
+        0,
+        'COMMA',
+        0,
+        'POINT'
+      )}"
+                        >20,000</span
+                      >
+                    </span>
+
+                    <!-- TIPE KOSONG -->
+                    <span th:if="${transaction.type == null}">-</span>
                   </td>
 
                   <td

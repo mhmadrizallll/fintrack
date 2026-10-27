@@ -56,6 +56,30 @@
         white-space: nowrap;
       }
 
+      .amount-transfer {
+        color: #7c3aed;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .badge-transfer {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 9px;
+        border-radius: 999px;
+        background: #f5f3ff;
+        color: #7c3aed;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .transfer-arrow {
+        color: #7c3aed;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
       .description-cell {
         max-width: 220px;
 
@@ -540,19 +564,24 @@
 
                     <td>
                       <span
-                        th:if="${transaction.type != null
-                                            and transaction.type.name() == 'INCOME'}"
+                        th:if="${transaction.type != null and transaction.type.name() == 'INCOME'}"
                         class="badge badge-income"
                       >
                         INCOME
                       </span>
 
                       <span
-                        th:if="${transaction.type != null
-                                            and transaction.type.name() == 'EXPENSE'}"
+                        th:if="${transaction.type != null and transaction.type.name() == 'EXPENSE'}"
                         class="badge badge-expense"
                       >
                         EXPENSE
+                      </span>
+
+                      <span
+                        th:if="${transaction.type != null and transaction.type.name() == 'TRANSFER'}"
+                        class="badge-transfer"
+                      >
+                        TRANSFER
                       </span>
                     </td>
 
@@ -578,16 +607,36 @@
                     <!-- FUND SOURCE -->
 
                     <td>
+                      <th:block
+                        th:if="${transaction.type != null and transaction.type.name() == 'TRANSFER'}"
+                      >
+                        <span
+                          class="fund-source-name"
+                          th:text="${transaction.fundSource != null ? transaction.fundSource.name : '-'}"
+                        >
+                          Cash
+                        </span>
+
+                        <span class="transfer-arrow"> → </span>
+
+                        <span
+                          class="fund-source-name"
+                          th:text="${transaction.destinationFundSource != null ? transaction.destinationFundSource.name : '-'}"
+                        >
+                          BCA
+                        </span>
+                      </th:block>
+
                       <span
                         class="fund-source-name"
-                        th:if="${transaction.fundSource != null}"
+                        th:if="${transaction.type != null and transaction.type.name() != 'TRANSFER' and transaction.fundSource != null}"
                         th:text="${transaction.fundSource.name}"
                       >
                         Cash
                       </span>
 
                       <span
-                        th:unless="${transaction.fundSource != null}"
+                        th:if="${transaction.fundSource == null}"
                         class="no-receipt"
                       >
                         -
@@ -597,34 +646,34 @@
                     <!-- AMOUNT -->
 
                     <td>
+                      <!-- INCOME: HIJAU DAN POSITIF -->
+
                       <span
-                        th:if="${transaction.type != null
-                                            and transaction.type.name() == 'INCOME'}"
+                        th:if="${transaction.type != null and transaction.type.name() == 'INCOME'}"
                         class="amount-income"
-                        th:text="${'+ Rp ' + #numbers.formatDecimal(
-                                            transaction.amount,
-                                            0,
-                                            'POINT',
-                                            0,
-                                            'COMMA'
-                                        )}"
+                        th:text="${'+ Rp ' + #numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA')}"
                       >
                         + Rp 0
                       </span>
 
+                      <!-- EXPENSE: MERAH DAN NEGATIF -->
+
                       <span
-                        th:if="${transaction.type != null
-                                            and transaction.type.name() == 'EXPENSE'}"
+                        th:if="${transaction.type != null and transaction.type.name() == 'EXPENSE'}"
                         class="amount-expense"
-                        th:text="${'- Rp ' + #numbers.formatDecimal(
-                                            transaction.amount,
-                                            0,
-                                            'POINT',
-                                            0,
-                                            'COMMA'
-                                        )}"
+                        th:text="${'- Rp ' + #numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA')}"
                       >
                         - Rp 0
+                      </span>
+
+                      <!-- TRANSFER: UNGU DAN NETRAL -->
+
+                      <span
+                        th:if="${transaction.type != null and transaction.type.name() == 'TRANSFER'}"
+                        class="amount-transfer"
+                        th:text="${'Rp ' + #numbers.formatDecimal(transaction.amount, 0, 'POINT', 0, 'COMMA')}"
+                      >
+                        Rp 0
                       </span>
                     </td>
 

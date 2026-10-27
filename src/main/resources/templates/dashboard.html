@@ -42,7 +42,7 @@
             </div>
 
             <div class="action-group">
-              <a href="/admin/transactions/new" class="btn btn-primary">
+              <a href="/transactions/new" class="btn btn-primary">
                 <span> + </span>
 
                 Transaksi Baru
@@ -202,7 +202,7 @@
               </div>
 
               <div class="quick-actions">
-                <a href="/admin/transactions/new" class="quick-action">
+                <a href="/transactions/new" class="quick-action">
                   <span class="quick-action-icon"> 💰 </span>
 
                   <span>
@@ -277,36 +277,93 @@
 
                     <td>
                       <span
-                        th:if="${transaction.type.name() == 'INCOME'}"
+                        th:if="${transaction.type != null and transaction.type.name() == 'INCOME'}"
                         class="badge badge-income"
                       >
                         INCOME
                       </span>
 
                       <span
-                        th:if="${transaction.type.name() == 'EXPENSE'}"
+                        th:if="${transaction.type != null and transaction.type.name() == 'EXPENSE'}"
                         class="badge badge-expense"
                       >
                         EXPENSE
                       </span>
+
+                      <span
+                        th:if="${transaction.type != null and transaction.type.name() == 'TRANSFER'}"
+                        class="badge-transfer"
+                      >
+                        TRANSFER
+                      </span>
+
+                      <span th:if="${transaction.type == null}">-</span>
                     </td>
 
-                    <td th:text="${transaction.category.name}">Category</td>
+                    <td>
+                      <span
+                        th:text="${transaction.category != null
+      ? transaction.category.name
+      : '-'}"
+                      >
+                        Category
+                      </span>
+                    </td>
 
-                    <td th:text="${transaction.fundSource.name}">Cash</td>
+                    <td>
+                      <span
+                        th:text="${transaction.fundSource != null
+      ? transaction.fundSource.name
+      : '-'}"
+                      >
+                        Cash
+                      </span>
+                    </td>
 
                     <td>
                       <strong
-                        th:text="${'Rp ' + #numbers.formatDecimal(
-                                            transaction.amount,
-                                            0,
-                                            'POINT',
-                                            0,
-                                            'COMMA'
-                                        )}"
+                        th:if="${transaction.type != null and transaction.type.name() == 'INCOME'}"
+                        style="color: #16a34a"
+                        th:text="${'+ Rp ' + #numbers.formatDecimal(
+      transaction.amount,
+      0,
+      'POINT',
+      0,
+      'COMMA'
+    )}"
                       >
-                        Rp 0
+                        + Rp 100.000
                       </strong>
+
+                      <strong
+                        th:if="${transaction.type != null and transaction.type.name() == 'EXPENSE'}"
+                        style="color: #dc2626"
+                        th:text="${'- Rp ' + #numbers.formatDecimal(
+      transaction.amount,
+      0,
+      'POINT',
+      0,
+      'COMMA'
+    )}"
+                      >
+                        - Rp 100.000
+                      </strong>
+
+                      <strong
+                        th:if="${transaction.type != null and transaction.type.name() == 'TRANSFER'}"
+                        style="color: #2563eb"
+                        th:text="${'Rp ' + #numbers.formatDecimal(
+      transaction.amount,
+      0,
+      'POINT',
+      0,
+      'COMMA'
+    )}"
+                      >
+                        Rp 100.000
+                      </strong>
+
+                      <span th:if="${transaction.type == null}">-</span>
                     </td>
                   </tr>
 
@@ -501,6 +558,17 @@
         .today-divider {
           margin: 0 10px;
         }
+      }
+
+      .badge-transfer {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #dbeafe;
+        color: #1d4ed8;
+        font-size: 11px;
+        font-weight: 700;
       }
     </style>
 
